@@ -18,15 +18,20 @@ public class GameManage : MonoBehaviour {
     private readonly Color[] colorsForBeats = {Color.yellow, Color.cyan, Color.magenta};
     private int colorsIndex;
 
+    public GameObject player;
+    public GameObject bossAttack1;
+    private readonly Dictionary<GameObject, GameCoordinate> objectMap =
+        new Dictionary<GameObject, GameCoordinate>();
+
     /**
      * 傳入：遊戲座標（第 M 圈，第 N 格）
      * 回傳：對應的 Unity 座標（X，Y，Z=0）
      * 共有 12 圈，最內圈為第 0 圈，最外圈為第 11 圈
      * 每圈皆有 12 格，+X 方向為第 0 格，逆時針數
      */
-    public static Vector3 IndexToPosition(byte m, byte n) {
-        var r = RadiusOffset + m * RadiusDelta;
-        var theta = n % 12 * AngleDelta;
+    private static Vector3 GameCoordToCartesianCoord(GameCoordinate g) {
+        var r = RadiusOffset + g.M() * RadiusDelta;
+        var theta = g.N() % 12 * AngleDelta;
         theta = theta * Mathf.PI / 180;
         var x = r * Mathf.Cos(theta);
         var y = r * Mathf.Sin(theta);
@@ -46,6 +51,14 @@ public class GameManage : MonoBehaviour {
         for (float i = 5; i <= 60; i += 5)
             beats.Enqueue(i - 0.2f);
 
+        var initialPosition = new GameCoordinate(11, 0);
+        objectMap.Add(player, initialPosition);
+        player.transform.position = GameCoordToCartesianCoord(initialPosition);
+
+        initialPosition = new GameCoordinate(5, 6);
+        objectMap.Add(bossAttack1, initialPosition);
+        bossAttack1.transform.position = GameCoordToCartesianCoord(initialPosition);
+
     }
 
     private void Update() {
@@ -62,20 +75,49 @@ public class GameManage : MonoBehaviour {
 
         if (showTransform.detectedActions.Count != 0) {
             // 處理玩家的動作
+            GameCoordinate newPosition;
             switch (showTransform.detectedActions.Dequeue()) {
                 case PlayerAction.MoveFront:
+                    newPosition = new GameCoordinate(
+                        objectMap[player].M() - 1, objectMap[player].N()
+                    );
+                    objectMap[player] = newPosition;
+                    player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.MoveBack:
+                    newPosition = new GameCoordinate(
+                        objectMap[player].M() + 1, objectMap[player].N()
+                    );
+                    objectMap[player] = newPosition;
+                    player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.MoveLeft:
+                    newPosition = new GameCoordinate(
+                        objectMap[player].M(), objectMap[player].N() - 1
+                    );
+                    objectMap[player] = newPosition;
+                    player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.MoveRight:
+                    newPosition = new GameCoordinate(
+                        objectMap[player].M(), objectMap[player].N() + 1
+                    );
+                    objectMap[player] = newPosition;
+                    player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.NoAction:
                     break;
             }
+            BossAttack();
         }
 
+    }
+
+    private void BossAttack() {
+        var attacked = objectMap[bossAttack1].Equals(objectMap[player]);
+        if (attacked) {
+            // 玩家被攻擊，我們還沒決定會發生什麼事
+        }
     }
 
 }

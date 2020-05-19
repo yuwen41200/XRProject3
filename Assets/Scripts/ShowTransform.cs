@@ -140,6 +140,9 @@ public class ShowTransform : MonoBehaviour
                 detectedActions.Enqueue(PlayerAction.NoAction);
             }
         }
+        else {
+            detectedActions.Enqueue(PlayerAction.NoAction);
+        }
 
         PositionList.Clear();
         SpeedList.Clear();
