@@ -13,6 +13,11 @@ public class GameManage : MonoBehaviour {
     public GameObject showTransformCarrier;
     private ShowTransform showTransform;
 
+    public GameObject sampleLightCarrier;
+    private Light sampleLight;
+    private readonly Color[] colorsForBeats = {Color.yellow, Color.cyan, Color.magenta};
+    private int colorsIndex;
+
     /**
      * 傳入：遊戲座標（第 M 圈，第 N 格）
      * 回傳：對應的 Unity 座標（X，Y，Z=0）
@@ -22,6 +27,7 @@ public class GameManage : MonoBehaviour {
     public static Vector3 IndexToPosition(byte m, byte n) {
         var r = RadiusOffset + m * RadiusDelta;
         var theta = n % 12 * AngleDelta;
+        theta = theta * Mathf.PI / 180;
         var x = r * Mathf.Cos(theta);
         var y = r * Mathf.Sin(theta);
         return new Vector3(x, y, 0);
@@ -34,6 +40,7 @@ public class GameManage : MonoBehaviour {
         if (!gameMusic.playOnAwake) gameMusic.Play();
 
         showTransform = showTransformCarrier.GetComponent<ShowTransform>();
+        sampleLight = sampleLightCarrier.GetComponent<Light>();
 
         // 測試用，音樂完成後應替換成真實資料（單位：秒）
         for (float i = 5; i <= 60; i += 5)
@@ -46,7 +53,11 @@ public class GameManage : MonoBehaviour {
         if (beats.Count != 0 && gameMusic.time >= beats.Peek()) {
             // 下一個拍點到了
             beats.Dequeue();
+            // 啟動玩家動作偵測
             showTransform.turnedOn = true;
+            // 變換燈光顏色（示範）
+            sampleLight.color = colorsForBeats[colorsIndex];
+            colorsIndex = (colorsIndex + 1) % 3;
         }
 
         if (showTransform.detectedActions.Count != 0) {
