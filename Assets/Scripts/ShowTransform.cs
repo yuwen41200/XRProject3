@@ -26,8 +26,8 @@ public class ShowTransform : MonoBehaviour
     [SerializeField]
     Vector3 curSpeed;
 
-    public bool turnedOn; // This flag will be set by GameMange
-    public PlayerAction detectedAction;
+    public bool turnedOn; // This flag will be set by GameManage
+    public Queue<PlayerAction> detectedActions; // Used by GameManage
 
     // Start is called before the first frame update
     void Start()
@@ -37,6 +37,7 @@ public class ShowTransform : MonoBehaviour
         CameraRigTransform = CameraRigObj.GetComponent<Transform>();
         init();
         turnedOn = false;
+        detectedActions = new Queue<PlayerAction>();
     }
 
 
@@ -120,23 +121,23 @@ public class ShowTransform : MonoBehaviour
         if (validSpeed[Maxindex] > 10)
         {
             if (Maxindex == 0) {
-                detectedAction = PlayerAction.MoveBack;
+                detectedActions.Enqueue(PlayerAction.MoveBack);
                 Debug.Log("we detect up!");
             }
             else if (Maxindex == 1) {
-                detectedAction = PlayerAction.MoveFront;
+                detectedActions.Enqueue(PlayerAction.MoveFront);
                 Debug.Log("we detect down!");
             }
             else if (Maxindex == 2) {
-                detectedAction = PlayerAction.MoveLeft;
+                detectedActions.Enqueue(PlayerAction.MoveLeft);
                 Debug.Log("we detect left!");
             }
             else if (Maxindex == 3) {
-                detectedAction = PlayerAction.MoveRight;
+                detectedActions.Enqueue(PlayerAction.MoveRight);
                 Debug.Log("we detect right!");
             }
             else {
-                detectedAction = PlayerAction.NoAction;
+                detectedActions.Enqueue(PlayerAction.NoAction);
             }
         }
 

@@ -42,11 +42,29 @@ public class GameManage : MonoBehaviour {
     }
 
     private void Update() {
-        if (beats.Count == 0 || gameMusic.time < beats.Peek()) return;
-        // 下一個拍點到了
-        beats.Dequeue();
-        showTransform.turnedOn = true;
-        // player move
+
+        if (beats.Count != 0 && gameMusic.time >= beats.Peek()) {
+            // 下一個拍點到了
+            beats.Dequeue();
+            showTransform.turnedOn = true;
+        }
+
+        if (showTransform.detectedActions.Count != 0) {
+            // 處理玩家的動作
+            switch (showTransform.detectedActions.Dequeue()) {
+                case PlayerAction.MoveFront:
+                    break;
+                case PlayerAction.MoveBack:
+                    break;
+                case PlayerAction.MoveLeft:
+                    break;
+                case PlayerAction.MoveRight:
+                    break;
+                case PlayerAction.NoAction:
+                    break;
+            }
+        }
+
     }
 
 }
