@@ -25,7 +25,7 @@ public class GameManage : MonoBehaviour {
 
     /**
      * 傳入：遊戲座標（第 M 圈，第 N 格）
-     * 回傳：對應的 Unity 座標（X，Y，Z=0）
+     * 回傳：對應的 Unity 座標（X，Y=0，Z）
      * 共有 12 圈，最內圈為第 0 圈，最外圈為第 11 圈
      * 每圈皆有 12 格，+X 方向為第 0 格，逆時針數
      */
@@ -34,8 +34,8 @@ public class GameManage : MonoBehaviour {
         var theta = g.N() % 12 * AngleDelta;
         theta = theta * Mathf.PI / 180;
         var x = r * Mathf.Cos(theta);
-        var y = r * Mathf.Sin(theta);
-        return new Vector3(x, y, 0);
+        var z = r * Mathf.Sin(theta);
+        return new Vector3(x, 0, z);
     }
 
     private void Start() {
