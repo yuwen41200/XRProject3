@@ -26,6 +26,8 @@ public class ShowTransform : MonoBehaviour
     [SerializeField]
     Vector3 curSpeed;
 
+    public bool turnedOn; // This flag will be set by GameMange
+    public PlayerAction detectedAction;
 
     // Start is called before the first frame update
     void Start()
@@ -34,16 +36,21 @@ public class ShowTransform : MonoBehaviour
         CameraRigObj = GameObject.Find("[CameraRig]");
         CameraRigTransform = CameraRigObj.GetComponent<Transform>();
         init();
+        turnedOn = false;
     }
 
 
     private void FixedUpdate()
     {
+
+        if (!turnedOn) return;
+
         CalSpeed();
-        if(PositionList.Count > 100)
+        if (PositionList.Count > 100)
         {
             Debug.Log("Start Detect !");
             DetectMovement();
+            turnedOn = false;
         }
         ShowMsg();
 
@@ -69,7 +76,7 @@ public class ShowTransform : MonoBehaviour
         //{
         //    if(Mathf.Sign(curSpeed.y) == Mathf.Sign(SpeedList[PositionList.Count - 1].y)) Debug.Log("upup!");
         //}
-            
+
         PositionList.Add(curPosition);
         SpeedList.Add(curSpeed);
 
@@ -112,11 +119,26 @@ public class ShowTransform : MonoBehaviour
         }
         if (validSpeed[Maxindex] > 10)
         {
-            if (Maxindex == 0) Debug.Log("we detect up!");
-            if (Maxindex == 1) Debug.Log("we detect down!");
-            if (Maxindex == 2) Debug.Log("we detect left!");
-            if (Maxindex == 3) Debug.Log("we detect right!");
-        } 
+            if (Maxindex == 0) {
+                detectedAction = PlayerAction.MoveBack;
+                Debug.Log("we detect up!");
+            }
+            else if (Maxindex == 1) {
+                detectedAction = PlayerAction.MoveFront;
+                Debug.Log("we detect down!");
+            }
+            else if (Maxindex == 2) {
+                detectedAction = PlayerAction.MoveLeft;
+                Debug.Log("we detect left!");
+            }
+            else if (Maxindex == 3) {
+                detectedAction = PlayerAction.MoveRight;
+                Debug.Log("we detect right!");
+            }
+            else {
+                detectedAction = PlayerAction.NoAction;
+            }
+        }
 
         PositionList.Clear();
         SpeedList.Clear();
@@ -136,4 +158,10 @@ public class ShowTransform : MonoBehaviour
         SpeedList.Add(curSpeed);
 
     }
+}
+
+public enum PlayerAction {
+    MoveFront, MoveBack, MoveLeft, MoveRight,
+    AttackUp, AttackDown, AttackLeft, AttackRight,
+    NoAction
 }

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManage : MonoBehaviour {
@@ -8,7 +8,10 @@ public class GameManage : MonoBehaviour {
     private const float AngleDelta = 30;
 
     private AudioSource gameMusic;
-    private readonly float[] beats = {5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60};
+    private readonly Queue<float> beats = new Queue<float>();
+
+    public GameObject showTransformCarrier;
+    private ShowTransform showTransform;
 
     /**
      * 傳入：遊戲座標（第 M 圈，第 N 格）
@@ -25,14 +28,25 @@ public class GameManage : MonoBehaviour {
     }
 
     private void Start() {
+
         gameMusic = GetComponent<AudioSource>();
         gameMusic.loop = true;
         if (!gameMusic.playOnAwake) gameMusic.Play();
+
+        showTransform = showTransformCarrier.GetComponent<ShowTransform>();
+
+        // 測試用，音樂完成後應替換成真實資料（單位：秒）
+        for (float i = 5; i <= 60; i += 5)
+            beats.Enqueue(i - 0.2f);
+
     }
 
     private void Update() {
-        if (Array.IndexOf(beats, gameMusic.time) < 0) return;
-        Debug.Log("Active Frame");
+        if (beats.Count == 0 || gameMusic.time < beats.Peek()) return;
+        // 下一個拍點到了
+        beats.Dequeue();
+        showTransform.turnedOn = true;
+        // player move
     }
 
 }
