@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Valve.VR;
 
 public class ShowTransform : MonoBehaviour
 {
@@ -15,19 +16,29 @@ public class ShowTransform : MonoBehaviour
     GameObject CameraRigObj;
     Transform CameraRigTransform;
 
-    Vector3 curPosition;
     List<Vector3> PositionList = new List<Vector3>();
     List<Vector3> SpeedList = new List<Vector3>();
+    List<Vector3> RotationList = new List<Vector3>();
 
 
     [SerializeField]
     float speedTreshold;
-
     [SerializeField]
+    float rotationTreshold;
+
     Vector3 curSpeed;
+    Vector3 curPosition;
+    Vector3 curRotation;
 
     public bool turnedOn; // This flag will be set by GameManage
     public Queue<PlayerAction> detectedActions; // Used by GameManage
+
+    [SerializeField]
+    private Text testDirection;
+
+
+    [SerializeField]
+    private SteamVR_Behaviour_Pose pose;
 
     // Start is called before the first frame update
     void Start()
@@ -43,35 +54,34 @@ public class ShowTransform : MonoBehaviour
 
     private void FixedUpdate()
     {
-
+        ShowMsg();
         if (!turnedOn) return;
 
-        CalSpeed();
-        if (PositionList.Count > 100)
+        Cal_Update_Data();
+        // test, change 100 to 50
+        if (PositionList.Count > 50)
         {
-            Debug.Log("Start Detect !");
+            Debug.Log("Start Judge !");
             DetectMovement();
             turnedOn = false;
         }
-        ShowMsg();
 
         if (Input.GetKey(KeyCode.Space))
         {
             PositionList.Clear();
             SpeedList.Clear();
+            RotationList.Clear();
             init();
             Debug.Log("Clear");
         }
 
     }
 
-
-
-
-    void CalSpeed()
+    void Cal_Update_Data()
     {
         curPosition = objTransform.position - CameraRigTransform.position;
         curSpeed = (curPosition - PositionList[PositionList.Count-1]) / Time.fixedDeltaTime;
+        curRotation = pose.GetAngularVelocity();
 
         //if (Mathf.Abs(curSpeed.y) > speedTreshold && Mathf.Abs(SpeedList[PositionList.Count - 1].y) > speedTreshold )
         //{
@@ -80,6 +90,7 @@ public class ShowTransform : MonoBehaviour
 
         PositionList.Add(curPosition);
         SpeedList.Add(curSpeed);
+        RotationList.Add(curRotation);
 
 
     }
@@ -87,7 +98,6 @@ public class ShowTransform : MonoBehaviour
     {
         //  [0] is up, [1] is down, [2] is left, [3] is right
         int[] validSpeed = new int[4];
-        bool hasEnoughSpeed = false;
 
         for(int i = 1; i < SpeedList.Count; i++)
         {
@@ -99,6 +109,8 @@ public class ShowTransform : MonoBehaviour
             {
                 validSpeed[1]++;
             }
+
+            /*  try to use other data to detect left and right*/
             if (SpeedList[i].x < -speedTreshold)
             {
                 validSpeed[2]++;
@@ -109,34 +121,75 @@ public class ShowTransform : MonoBehaviour
             }
         }
 
-        int Maxindex = 0 , MaxValue = 0;
-        for (int i = 0; i < 4; i++)
+        //  [0] is up, [1] is down, [2] is left, [3] is right
+        int[] validRotation = new int[4];
+        //  X- => up, Y- => left
+        for(int i = 1; i < RotationList.Count; i++)
         {
-            if(validSpeed[i] > MaxValue)
+            if (RotationList[i].x < -rotationTreshold)
             {
-                Maxindex = i;
-                MaxValue = validSpeed[i];
+                validRotation[0]++;
+            }
+            if (RotationList[i].x > rotationTreshold)
+            {
+                validRotation[1]++;
+            }
+            if (RotationList[i].y < -rotationTreshold)
+            {
+                validRotation[2]++;
+            }
+            if (RotationList[i].y > rotationTreshold)
+            {
+                validRotation[3]++;
             }
         }
-        if (validSpeed[Maxindex] > 10)
+
+        Debug.Log(validSpeed[0] + "," + validSpeed[1]+ "," +validRotation[2]+ "," +validRotation[3]);
+
+        int Maxindex = 0 , MaxValue = 0;
+
+        if(validSpeed[0] > validSpeed[1])
+        {
+            Maxindex = 0;
+            MaxValue = validSpeed[0];
+        }else{
+            Maxindex = 1;
+            MaxValue = validSpeed[1];
+        }
+        if(validRotation[2] > MaxValue)
+        {
+            Maxindex = 2;
+            MaxValue = validRotation[2];
+        }
+        if(validRotation[3] > MaxValue){
+            Maxindex = 3;
+            MaxValue = validRotation[3];
+        }
+
+        if (MaxValue > 7)
         {
             if (Maxindex == 0) {
                 detectedActions.Enqueue(PlayerAction.MoveBack);
+                testDirection.text = "UP";
                 Debug.Log("we detect up!");
             }
             else if (Maxindex == 1) {
                 detectedActions.Enqueue(PlayerAction.MoveFront);
+                testDirection.text = "Down";
                 Debug.Log("we detect down!");
             }
             else if (Maxindex == 2) {
                 detectedActions.Enqueue(PlayerAction.MoveLeft);
+                testDirection.text = "Left";
                 Debug.Log("we detect left!");
             }
             else if (Maxindex == 3) {
                 detectedActions.Enqueue(PlayerAction.MoveRight);
+                testDirection.text = "Right";
                 Debug.Log("we detect right!");
             }
             else {
+                testDirection.text = "None";
                 detectedActions.Enqueue(PlayerAction.NoAction);
             }
         }
@@ -146,20 +199,23 @@ public class ShowTransform : MonoBehaviour
 
         PositionList.Clear();
         SpeedList.Clear();
+        RotationList.Clear();
         init();
 
     }
     void ShowMsg()
     {
-        text.text = objTransform.position.ToString() + "\n" + curSpeed;
+        text.text = objTransform.position.ToString() + "\n" + curSpeed + "\n" +
+        pose.GetAngularVelocity();
     }
 
     void init()
     {
         curPosition = objTransform.position - CameraRigTransform.position;
-        curSpeed = Vector3.zero;
+        curSpeed = curRotation = Vector3.zero;
         PositionList.Add(curPosition);
         SpeedList.Add(curSpeed);
+        RotationList.Add(curRotation);
 
     }
 }

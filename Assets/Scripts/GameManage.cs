@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 
 public class GameManage : MonoBehaviour {
 
@@ -22,6 +23,13 @@ public class GameManage : MonoBehaviour {
     public GameObject bossAttack1;
     private readonly Dictionary<GameObject, GameCoordinate> objectMap =
         new Dictionary<GameObject, GameCoordinate>();
+
+    //test all possible positions, can be removed
+    public GameObject testg;
+
+    //張文胤
+    [SerializeField]
+    float moveSpeed;
 
     /**
      * 傳入：遊戲座標（第 M 圈，第 N 格）
@@ -47,8 +55,8 @@ public class GameManage : MonoBehaviour {
         showTransform = showTransformCarrier.GetComponent<ShowTransform>();
         sampleLight = sampleLightCarrier.GetComponent<Light>();
 
-        // 測試用，音樂完成後應替換成真實資料（單位：秒）
-        for (float i = 5; i <= 60; i += 5)
+        // 測試用，音樂完成後應替換成真實資料（單位：秒）// test, change 5 to 2, change 60 to 200
+        for (float i = 5; i <= 200; i += 2)
             beats.Enqueue(i - 0.2f);
 
         var initialPosition = new GameCoordinate(11, 0);
@@ -59,10 +67,27 @@ public class GameManage : MonoBehaviour {
         objectMap.Add(bossAttack1, initialPosition);
         bossAttack1.transform.position = GameCoordToCartesianCoord(initialPosition);
 
+        ShowAllPosition();
     }
 
-    private void Update() {
+    //test all possible position
+    private void ShowAllPosition()
+    {
+        for (int i = 0; i < 12; ++i)
+        {
+            for (int j = 0; j < 12; ++j)
+            {
+                var tmpP = new GameCoordinate(i,j);
+                Instantiate(testg, GameCoordToCartesianCoord(tmpP),Quaternion.identity);
+            }
+        }
+    }
 
+    private void FixedUpdate() {
+
+        // 讓玩家的鏡頭前方永遠朝向中心點，好判斷跟計算
+        player.transform.LookAt(Vector3.zero);
+        
         if (beats.Count != 0 && gameMusic.time >= beats.Peek()) {
             // 下一個拍點到了
             beats.Dequeue();
@@ -75,6 +100,7 @@ public class GameManage : MonoBehaviour {
 
         if (showTransform.detectedActions.Count != 0) {
             // 處理玩家的動作
+
             GameCoordinate newPosition;
             switch (showTransform.detectedActions.Dequeue()) {
                 case PlayerAction.MoveFront:
@@ -82,28 +108,33 @@ public class GameManage : MonoBehaviour {
                         objectMap[player].M() - 1, objectMap[player].N()
                     );
                     objectMap[player] = newPosition;
-                    player.transform.position = GameCoordToCartesianCoord(newPosition);
+                    StartCoroutine(MoveSmoothly(GameCoordToCartesianCoord(newPosition)));
+                    //改成 Coroutine的方式
+                    //player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.MoveBack:
                     newPosition = new GameCoordinate(
                         objectMap[player].M() + 1, objectMap[player].N()
                     );
                     objectMap[player] = newPosition;
-                    player.transform.position = GameCoordToCartesianCoord(newPosition);
+                    StartCoroutine(MoveSmoothly(GameCoordToCartesianCoord(newPosition)));
+                    //player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.MoveLeft:
                     newPosition = new GameCoordinate(
                         objectMap[player].M(), objectMap[player].N() - 1
                     );
                     objectMap[player] = newPosition;
-                    player.transform.position = GameCoordToCartesianCoord(newPosition);
+                    StartCoroutine(MoveSmoothly(GameCoordToCartesianCoord(newPosition)));
+                    //player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.MoveRight:
                     newPosition = new GameCoordinate(
                         objectMap[player].M(), objectMap[player].N() + 1
                     );
                     objectMap[player] = newPosition;
-                    player.transform.position = GameCoordToCartesianCoord(newPosition);
+                    StartCoroutine(MoveSmoothly(GameCoordToCartesianCoord(newPosition)));
+                    //player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.NoAction:
                     break;
@@ -111,6 +142,20 @@ public class GameManage : MonoBehaviour {
             BossAttack();
         }
 
+    }
+
+    private IEnumerator MoveSmoothly(Vector3 targetPosition)
+    {
+        float dist = Vector3.Distance(player.transform.position, targetPosition);
+        Vector3 dir = (targetPosition - player.transform.position);
+        //Debug.Log(dir);
+        while (dist > 0.5f)
+        {
+            player.transform.Translate(dir * moveSpeed, Space.World);
+            dist = Vector3.Distance(player.transform.position, targetPosition);
+            yield return null;
+        }
+        yield return null;
     }
 
     private void BossAttack() {

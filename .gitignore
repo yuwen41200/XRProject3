@@ -64,6 +64,9 @@ crashlytics-build.properties
 # *.mp4
 # *.psd
 # *.kra
+Assets/Model/*.fbx
+Assets/Model/*.png
+Assets/Music/*.mp3
 
 # macOS system file
 .DS_Store
