@@ -1,14 +1,28 @@
+using UnityEngine;
+
+/**
+ * 遊戲座標（第 M 圈，第 N 格）
+ * 共有 6 圈，最內圈為第 0 圈，最外圈為第 5 圈
+ * 每圈皆有 24 格，+X 方向為第 0 格，逆時針數
+ */
 public class GameCoordinate {
+
+    private const float RadiusOffset = 10;
+    private const float RadiusDelta = 3;
+    private const byte SizeOfM = 6;
+
+    private const float AngleDelta = 15;
+    private const byte SizeOfN = (byte) (360 / AngleDelta);
 
     private readonly byte m;
     private readonly byte n;
 
     public GameCoordinate(int newM, int newN) {
-        if (newM > 11) m = 11;
+        if (newM > SizeOfM - 1) m = SizeOfM - 1;
         if (newM < 0) m = 0;
         m = (byte) newM;
-        newN %= 12;
-        if (newN < 0) newN += 12;
+        newN %= SizeOfN;
+        if (newN < 0) newN += SizeOfN;
         n = (byte) newN;
     }
 
@@ -33,6 +47,18 @@ public class GameCoordinate {
 
     public int N() {
         return n;
+    }
+
+    /**
+     * 換算對應的 Unity 座標（X，Y=0，Z）
+     */
+    public Vector3 ToCartesianCoordinate() {
+        var r = RadiusOffset + M() * RadiusDelta;
+        var theta = N() * AngleDelta;
+        theta = theta * Mathf.PI / 180;
+        var x = r * Mathf.Cos(theta);
+        var z = r * Mathf.Sin(theta);
+        return new Vector3(x, 0, z);
     }
 
 }

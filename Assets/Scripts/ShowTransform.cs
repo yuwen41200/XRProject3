@@ -22,16 +22,16 @@ public class ShowTransform : MonoBehaviour
 
 
     [SerializeField]
-    float speedTreshold;
+    float speedThreshold;
     [SerializeField]
-    float rotationTreshold;
+    float rotationThreshold;
 
     Vector3 curSpeed;
     Vector3 curPosition;
     Vector3 curRotation;
 
-    public bool turnedOn; // This flag will be set by GameManage
-    public Queue<PlayerAction> detectedActions; // Used by GameManage
+    public bool turnedOn; // This flag will be set by GameManagement
+    public Queue<PlayerAction> detectedActions; // Used by GameManagement
 
     [SerializeField]
     private Text testDirection;
@@ -101,21 +101,21 @@ public class ShowTransform : MonoBehaviour
 
         for(int i = 1; i < SpeedList.Count; i++)
         {
-            if (SpeedList[i].y > speedTreshold)
+            if (SpeedList[i].y > speedThreshold)
             {
                 validSpeed[0]++;
             }
-            if (SpeedList[i].y < -speedTreshold)
+            if (SpeedList[i].y < -speedThreshold)
             {
                 validSpeed[1]++;
             }
 
             /*  try to use other data to detect left and right*/
-            if (SpeedList[i].x < -speedTreshold)
+            if (SpeedList[i].x < -speedThreshold)
             {
                 validSpeed[2]++;
             }
-            if ( SpeedList[i].x > speedTreshold)
+            if ( SpeedList[i].x > speedThreshold)
             {
                 validSpeed[3]++;
             }
@@ -126,19 +126,19 @@ public class ShowTransform : MonoBehaviour
         //  X- => up, Y- => left
         for(int i = 1; i < RotationList.Count; i++)
         {
-            if (RotationList[i].x < -rotationTreshold)
+            if (RotationList[i].x < -rotationThreshold)
             {
                 validRotation[0]++;
             }
-            if (RotationList[i].x > rotationTreshold)
+            if (RotationList[i].x > rotationThreshold)
             {
                 validRotation[1]++;
             }
-            if (RotationList[i].y < -rotationTreshold)
+            if (RotationList[i].y < -rotationThreshold)
             {
                 validRotation[2]++;
             }
-            if (RotationList[i].y > rotationTreshold)
+            if (RotationList[i].y > rotationThreshold)
             {
                 validRotation[3]++;
             }
