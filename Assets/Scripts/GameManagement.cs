@@ -16,7 +16,7 @@ public class GameManagement : MonoBehaviour {
     private int colorsIndex;
 
     public GameObject player;
-    public GameObject bossAttack1;
+    public GameObject bossAttackMarker;
     private readonly Dictionary<GameObject, GameCoordinate> objectMap =
         new Dictionary<GameObject, GameCoordinate>();
 
@@ -45,14 +45,12 @@ public class GameManagement : MonoBehaviour {
         player.transform.position = initialPosition.ToCartesianCoordinate(height);
         player.transform.LookAt(Vector3.zero);
 
-        initialPosition = new GameCoordinate(5, 6);
-        objectMap.Add(bossAttack1, initialPosition);
-        bossAttack1.transform.position = initialPosition.ToCartesianCoordinate();
+        // Test all possible positions, can be removed
+        // ShowAllPosition();
 
-        ShowAllPosition();
     }
 
-    // Test all possible position
+    // Test all possible positions, can be removed
     private void ShowAllPosition() {
         for (var i = 0; i < 6; ++i) {
             for (var j = 0; j < 24; ++j) {
@@ -84,8 +82,6 @@ public class GameManagement : MonoBehaviour {
                     );
                     objectMap[player] = newPosition;
                     StartCoroutine(MoveSmoothly(newPosition.ToCartesianCoordinate(height)));
-                    // 改成 Coroutine 的方式
-                    // player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.MoveBack:
                     newPosition = new GameCoordinate(
@@ -93,7 +89,6 @@ public class GameManagement : MonoBehaviour {
                     );
                     objectMap[player] = newPosition;
                     StartCoroutine(MoveSmoothly(newPosition.ToCartesianCoordinate(height)));
-                    // player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.MoveLeft:
                     newPosition = new GameCoordinate(
@@ -101,7 +96,6 @@ public class GameManagement : MonoBehaviour {
                     );
                     objectMap[player] = newPosition;
                     StartCoroutine(MoveSmoothly(newPosition.ToCartesianCoordinate(height)));
-                    // player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.MoveRight:
                     newPosition = new GameCoordinate(
@@ -109,12 +103,12 @@ public class GameManagement : MonoBehaviour {
                     );
                     objectMap[player] = newPosition;
                     StartCoroutine(MoveSmoothly(newPosition.ToCartesianCoordinate(height)));
-                    // player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.NoAction:
                     break;
             }
             Debug.Log(newPosition);
+            // 敵人移動現有攻擊、對玩家造成傷害、發動新攻擊
             BossAttack();
         }
 
@@ -133,10 +127,46 @@ public class GameManagement : MonoBehaviour {
     }
 
     private void BossAttack() {
-        var attacked = objectMap[bossAttack1].Equals(objectMap[player]);
-        if (attacked) {
-            // 玩家被攻擊，我們還沒決定會發生什麼事
+
+        var objectMapKeys = new List<GameObject>(objectMap.Keys);
+        var candidates = new List<int>();
+        var numberOfNewAttack = GameCoordinate.GetSizeOfM() - objectMap[player].M() - 1;
+
+        foreach (var key in objectMapKeys) {
+            if (key == player) continue;
+            var newPosition = new GameCoordinate(
+                objectMap[key].M() + 1, objectMap[key].N(), true
+            );
+            if (newPosition.M() < GameCoordinate.GetSizeOfM()) {
+                objectMap[key] = newPosition;
+                key.transform.position = newPosition.ToCartesianCoordinate();
+                var playerAttacked = newPosition.Equals(objectMap[player]);
+                if (playerAttacked) {
+                    Debug.Log("玩家被攻擊，我們還沒決定會發生什麼事");
+                }
+            }
+            else {
+                objectMap.Remove(key);
+                Destroy(key);
+            }
         }
+
+        for (var i = 0; i < GameCoordinate.GetSizeOfN(); i++)
+            candidates.Add(i);
+
+        for (var i = 0; i < numberOfNewAttack; i++) {
+            var index = Random.Range(0, candidates.Count);
+            var attackPosition = new GameCoordinate(-3, candidates[index], true);
+            var newBossAttackMarker = Instantiate(
+                bossAttackMarker,
+                attackPosition.ToCartesianCoordinate(),
+                Quaternion.identity
+            );
+            objectMap.Add(newBossAttackMarker, attackPosition);
+            candidates.RemoveAt(index);
+            if (candidates.Count == 0) break;
+        }
+
     }
 
 }

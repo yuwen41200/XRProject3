@@ -14,16 +14,22 @@ public class GameCoordinate {
     private const float AngleDelta = 15;
     private const byte SizeOfN = (byte) (360 / AngleDelta);
 
-    private readonly byte m;
-    private readonly byte n;
+    private readonly sbyte m;
+    private readonly sbyte n;
 
-    public GameCoordinate(int newM, int newN) {
-        if (newM > SizeOfM - 1) newM = SizeOfM - 1;
-        if (newM < 0) newM = 0;
-        m = (byte) newM;
+    public GameCoordinate(int newM, int newN, bool extended = false) {
+        if (extended) {
+            var minM = - Mathf.FloorToInt(RadiusOffset / RadiusDelta);
+            if (newM < minM) newM = minM;
+        }
+        else {
+            if (newM > SizeOfM - 1) newM = SizeOfM - 1;
+            if (newM < 0) newM = 0;
+        }
+        m = (sbyte) newM;
         newN %= SizeOfN;
         if (newN < 0) newN += SizeOfN;
-        n = (byte) newN;
+        n = (sbyte) newN;
     }
 
     public GameCoordinate() {
@@ -51,6 +57,14 @@ public class GameCoordinate {
 
     public int N() {
         return n;
+    }
+
+    public static int GetSizeOfM() {
+        return SizeOfM;
+    }
+
+    public static int GetSizeOfN() {
+        return SizeOfN;
     }
 
     /**
