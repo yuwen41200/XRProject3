@@ -24,8 +24,8 @@ public class GameManagement : MonoBehaviour {
     public GameObject testG;
 
     // 張文胤
-    [SerializeField]
-    private float moveSpeed;
+    [SerializeField] private float moveSpeed;
+    [SerializeField] private float height;
 
     private void Start() {
 
@@ -40,9 +40,10 @@ public class GameManagement : MonoBehaviour {
         for (float i = 5; i <= 200; i += 2)
             beats.Enqueue(i - 0.2f);
 
-        var initialPosition = new GameCoordinate(11, 0);
+        var initialPosition = new GameCoordinate(5, 0);
         objectMap.Add(player, initialPosition);
-        player.transform.position = initialPosition.ToCartesianCoordinate();
+        player.transform.position = initialPosition.ToCartesianCoordinate(height);
+        player.transform.LookAt(Vector3.zero);
 
         initialPosition = new GameCoordinate(5, 6);
         objectMap.Add(bossAttack1, initialPosition);
@@ -53,8 +54,8 @@ public class GameManagement : MonoBehaviour {
 
     // Test all possible position
     private void ShowAllPosition() {
-        for (int i = 0; i < 12; ++i) {
-            for (int j = 0; j < 12; ++j) {
+        for (var i = 0; i < 6; ++i) {
+            for (var j = 0; j < 24; ++j) {
                 var tmpP = new GameCoordinate(i, j);
                 Instantiate(testG, tmpP.ToCartesianCoordinate(), Quaternion.identity);
             }
@@ -62,9 +63,6 @@ public class GameManagement : MonoBehaviour {
     }
 
     private void FixedUpdate() {
-
-        // 讓玩家的鏡頭前方永遠朝向中心點，好判斷跟計算
-        player.transform.LookAt(Vector3.zero);
 
         if (beats.Count != 0 && gameMusic.time >= beats.Peek()) {
             // 下一個拍點到了
@@ -78,14 +76,14 @@ public class GameManagement : MonoBehaviour {
 
         if (showTransform.detectedActions.Count != 0) {
             // 處理玩家的動作
-            GameCoordinate newPosition;
+            GameCoordinate newPosition = null;
             switch (showTransform.detectedActions.Dequeue()) {
                 case PlayerAction.MoveFront:
                     newPosition = new GameCoordinate(
                         objectMap[player].M() - 1, objectMap[player].N()
                     );
                     objectMap[player] = newPosition;
-                    StartCoroutine(MoveSmoothly(newPosition.ToCartesianCoordinate()));
+                    StartCoroutine(MoveSmoothly(newPosition.ToCartesianCoordinate(height)));
                     // 改成 Coroutine 的方式
                     // player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
@@ -94,7 +92,7 @@ public class GameManagement : MonoBehaviour {
                         objectMap[player].M() + 1, objectMap[player].N()
                     );
                     objectMap[player] = newPosition;
-                    StartCoroutine(MoveSmoothly(newPosition.ToCartesianCoordinate()));
+                    StartCoroutine(MoveSmoothly(newPosition.ToCartesianCoordinate(height)));
                     // player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.MoveLeft:
@@ -102,7 +100,7 @@ public class GameManagement : MonoBehaviour {
                         objectMap[player].M(), objectMap[player].N() - 1
                     );
                     objectMap[player] = newPosition;
-                    StartCoroutine(MoveSmoothly(newPosition.ToCartesianCoordinate()));
+                    StartCoroutine(MoveSmoothly(newPosition.ToCartesianCoordinate(height)));
                     // player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.MoveRight:
@@ -110,28 +108,28 @@ public class GameManagement : MonoBehaviour {
                         objectMap[player].M(), objectMap[player].N() + 1
                     );
                     objectMap[player] = newPosition;
-                    StartCoroutine(MoveSmoothly(newPosition.ToCartesianCoordinate()));
+                    StartCoroutine(MoveSmoothly(newPosition.ToCartesianCoordinate(height)));
                     // player.transform.position = GameCoordToCartesianCoord(newPosition);
                     break;
                 case PlayerAction.NoAction:
                     break;
             }
+            Debug.Log(newPosition);
             BossAttack();
         }
 
     }
 
-    private IEnumerator MoveSmoothly(Vector3 targetPosition) {
-        Vector3 playerPosition = player.transform.position;
-        float dist = Vector3.Distance(playerPosition, targetPosition);
-        Vector3 dir = targetPosition - playerPosition;
-        // Debug.Log(dir);
-        while (dist > 0.5f) {
-            player.transform.Translate(dir * moveSpeed, Space.World);
-            dist = Vector3.Distance(player.transform.position, targetPosition);
+    private IEnumerator MoveSmoothly(Vector3 destination) {
+        while (Vector3.Distance(player.transform.position, destination) > moveSpeed) {
+            var direction = Vector3.Normalize(destination - player.transform.position);
+            player.transform.Translate(direction * moveSpeed, Space.World);
+            // 讓玩家的鏡頭前方永遠朝向中心點，好判斷跟計算
+            player.transform.LookAt(Vector3.zero);
             yield return null;
         }
-        yield return null;
+        player.transform.position = destination;
+        player.transform.LookAt(Vector3.zero);
     }
 
     private void BossAttack() {

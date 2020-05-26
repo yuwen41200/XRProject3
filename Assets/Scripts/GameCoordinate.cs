@@ -18,8 +18,8 @@ public class GameCoordinate {
     private readonly byte n;
 
     public GameCoordinate(int newM, int newN) {
-        if (newM > SizeOfM - 1) m = SizeOfM - 1;
-        if (newM < 0) m = 0;
+        if (newM > SizeOfM - 1) newM = SizeOfM - 1;
+        if (newM < 0) newM = 0;
         m = (byte) newM;
         newN %= SizeOfN;
         if (newN < 0) newN += SizeOfN;
@@ -41,6 +41,10 @@ public class GameCoordinate {
         return m * 100 + n;
     }
 
+    public override string ToString() {
+        return "GameCoordinate(" + M() + ", " + N() + ")";
+    }
+
     public int M() {
         return m;
     }
@@ -52,13 +56,13 @@ public class GameCoordinate {
     /**
      * 換算對應的 Unity 座標（X，Y=0，Z）
      */
-    public Vector3 ToCartesianCoordinate() {
+    public Vector3 ToCartesianCoordinate(float y = 0) {
         var r = RadiusOffset + M() * RadiusDelta;
         var theta = N() * AngleDelta;
         theta = theta * Mathf.PI / 180;
         var x = r * Mathf.Cos(theta);
         var z = r * Mathf.Sin(theta);
-        return new Vector3(x, 0, z);
+        return new Vector3(x, y, z);
     }
 
 }

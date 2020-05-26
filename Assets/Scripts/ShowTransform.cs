@@ -91,9 +91,8 @@ public class ShowTransform : MonoBehaviour
         PositionList.Add(curPosition);
         SpeedList.Add(curSpeed);
         RotationList.Add(curRotation);
-
-
     }
+
     void DetectMovement()
     {
         //  [0] is up, [1] is down, [2] is left, [3] is right
@@ -144,7 +143,7 @@ public class ShowTransform : MonoBehaviour
             }
         }
 
-        Debug.Log(validSpeed[0] + "," + validSpeed[1]+ "," +validRotation[2]+ "," +validRotation[3]);
+        // Debug.Log(validSpeed[0] + "," + validSpeed[1]+ "," +validRotation[2]+ "," +validRotation[3]);
 
         int Maxindex = 0 , MaxValue = 0;
 
@@ -201,8 +200,8 @@ public class ShowTransform : MonoBehaviour
         SpeedList.Clear();
         RotationList.Clear();
         init();
-
     }
+
     void ShowMsg()
     {
         text.text = objTransform.position.ToString() + "\n" + curSpeed + "\n" +
@@ -216,8 +215,20 @@ public class ShowTransform : MonoBehaviour
         PositionList.Add(curPosition);
         SpeedList.Add(curSpeed);
         RotationList.Add(curRotation);
-
     }
+
+    private void Update() {
+        // 測試用，用鍵盤控制玩家動作
+        if (Input.GetKeyDown(KeyCode.W))
+            detectedActions.Enqueue(PlayerAction.MoveFront);
+        else if (Input.GetKeyDown(KeyCode.S))
+            detectedActions.Enqueue(PlayerAction.MoveBack);
+        else if (Input.GetKeyDown(KeyCode.A))
+            detectedActions.Enqueue(PlayerAction.MoveLeft);
+        else if (Input.GetKeyDown(KeyCode.D))
+            detectedActions.Enqueue(PlayerAction.MoveRight);
+    }
+
 }
 
 public enum PlayerAction {
