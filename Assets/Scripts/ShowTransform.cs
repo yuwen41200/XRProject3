@@ -227,6 +227,16 @@ public class ShowTransform : MonoBehaviour
             detectedActions.Enqueue(PlayerAction.MoveLeft);
         else if (Input.GetKeyDown(KeyCode.D))
             detectedActions.Enqueue(PlayerAction.MoveRight);
+        else if (Input.GetKeyDown(KeyCode.I))
+            detectedActions.Enqueue(PlayerAction.AttackUp);
+        else if (Input.GetKeyDown(KeyCode.K))
+            detectedActions.Enqueue(PlayerAction.AttackDown);
+        else if (Input.GetKeyDown(KeyCode.J))
+            detectedActions.Enqueue(PlayerAction.AttackLeft);
+        else if (Input.GetKeyDown(KeyCode.L))
+            detectedActions.Enqueue(PlayerAction.AttackRight);
+        else if (Input.GetKeyDown(KeyCode.Space))
+            detectedActions.Enqueue(PlayerAction.NoAction);
     }
 
 }

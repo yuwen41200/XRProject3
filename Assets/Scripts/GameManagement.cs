@@ -7,6 +7,7 @@ public class GameManagement : MonoBehaviour {
 
     private AudioSource gameMusic;
     private readonly Queue<float> beats = new Queue<float>();
+    private readonly Queue<PlayerAction> sols = new Queue<PlayerAction>();
 
     public GameObject showTransformCarrier;
     private ShowTransform showTransform;
@@ -48,6 +49,16 @@ public class GameManagement : MonoBehaviour {
         for (float i = 5; i <= 200; i += 2)
             beats.Enqueue(i - 0.2f);
 
+        // 各個拍點分別需要從哪個方向攻擊敵人
+        while (sols.Count < beats.Count) {
+            // 隨機產生一個方向，相同方向重覆八次（僅供參考，歡迎修改）
+            var nextAction = (PlayerAction) Random.Range(
+                (int) PlayerAction.AttackUp, (int) PlayerAction.AttackRight + 1
+            );
+            for (var _ = 0; _ < 8; _++)
+                sols.Enqueue(nextAction);
+        }
+
         var initialPosition = new GameCoordinate(5, 0);
         objectMap.Add(player, initialPosition);
         player.transform.position = initialPosition.ToCartesianCoordinate(height);
@@ -86,8 +97,11 @@ public class GameManagement : MonoBehaviour {
 
         if (showTransform.detectedActions.Count != 0) {
             // 處理玩家的動作
-            GameCoordinate newPosition = null;
-            switch (showTransform.detectedActions.Dequeue()) {
+            GameCoordinate newPosition;
+            var hurtableAction = (sols.Count != 0) ? sols.Dequeue() : PlayerAction.NoAction;
+            // Note: sols.Count == 0 should not happen
+            var playerAction = showTransform.detectedActions.Dequeue();
+            switch (playerAction) {
                 case PlayerAction.MoveFront:
                     newPosition = new GameCoordinate(
                         objectMap[player].M() - 1, objectMap[player].N()
@@ -115,6 +129,15 @@ public class GameManagement : MonoBehaviour {
                     );
                     objectMap[player] = newPosition;
                     StartCoroutine(MoveSmoothly(newPosition.ToCartesianCoordinate(height)));
+                    break;
+                case PlayerAction.AttackUp:
+                case PlayerAction.AttackDown:
+                case PlayerAction.AttackLeft:
+                case PlayerAction.AttackRight:
+                    if (hurtableAction == playerAction) {
+                        Debug.Log("敵人被攻擊！");
+                        bossHealth -= 1;
+                    }
                     break;
                 case PlayerAction.NoAction:
                     break;
@@ -186,9 +209,41 @@ public class GameManagement : MonoBehaviour {
 
     }
 
-    private void UpdateUI() {}
+    private void UpdateUI() {
+        var str = "Player Health: ";
+        str += new string('▓', Mathf.RoundToInt(playerHealth / maxPlayerHealth * 10));
+        str += "\nBoss Health: ";
+        str += new string('▓', Mathf.RoundToInt(bossHealth / maxBossHealth * 10));
+        str += "\n";
+        if (sols.Count != 0) {
+            str += "To Hurt Boss: ";
+            switch (sols.Peek()) {
+                case PlayerAction.AttackUp:
+                    str += "↑";
+                    break;
+                case PlayerAction.AttackDown:
+                    str += "↓";
+                    break;
+                case PlayerAction.AttackLeft:
+                    str += "←";
+                    break;
+                case PlayerAction.AttackRight:
+                    str += "→";
+                    break;
+            }
+            str += "\n";
+        }
+        healthStatusText.text = str;
+    }
 
-    private void GameEnd(bool playerWin) {}
+    private void GameEnd(bool playerWin) {
+        var str = healthStatusText.text;
+        str += "GAME ENDED! YOU ";
+        str += playerWin ? "WIN" : "LOSE";
+        str += "!\n";
+        healthStatusText.text = str;
+        Time.timeScale = 0;
+    }
 
     /**
      * 將屬性 objectMap 轉換成字串，用於除錯
