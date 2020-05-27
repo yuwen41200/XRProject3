@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManagement : MonoBehaviour {
 
@@ -27,6 +28,13 @@ public class GameManagement : MonoBehaviour {
     [SerializeField] private float moveSpeed;
     [SerializeField] private float height;
 
+    // 跟生命值有關的屬性
+    [SerializeField] private float maxPlayerHealth;
+    private float playerHealth;
+    [SerializeField] private float maxBossHealth;
+    private float bossHealth;
+    public Text healthStatusText;
+
     private void Start() {
 
         gameMusic = GetComponent<AudioSource>();
@@ -47,6 +55,10 @@ public class GameManagement : MonoBehaviour {
 
         // Test all possible positions, can be removed
         // ShowAllPosition();
+
+        playerHealth = maxPlayerHealth;
+        bossHealth = maxBossHealth;
+        UpdateUI();
 
     }
 
@@ -107,10 +119,14 @@ public class GameManagement : MonoBehaviour {
                 case PlayerAction.NoAction:
                     break;
             }
-            Debug.Log(newPosition);
             // 敵人移動現有攻擊、對玩家造成傷害、發動新攻擊
             BossAttack();
+            Debug.Log(ObjectMapToString(objectMap));
         }
+
+        UpdateUI();
+        if (bossHealth <= 0.0001) GameEnd(true);
+        else if (playerHealth <= 0.0001) GameEnd(false);
 
     }
 
@@ -142,7 +158,8 @@ public class GameManagement : MonoBehaviour {
                 key.transform.position = newPosition.ToCartesianCoordinate();
                 var playerAttacked = newPosition.Equals(objectMap[player]);
                 if (playerAttacked) {
-                    Debug.Log("玩家被攻擊，我們還沒決定會發生什麼事");
+                    Debug.Log("玩家被攻擊！");
+                    playerHealth -= 1;
                 }
             }
             else {
@@ -167,6 +184,21 @@ public class GameManagement : MonoBehaviour {
             if (candidates.Count == 0) break;
         }
 
+    }
+
+    private void UpdateUI() {}
+
+    private void GameEnd(bool playerWin) {}
+
+    /**
+     * 將屬性 objectMap 轉換成字串，用於除錯
+     */
+    private string ObjectMapToString(Dictionary<GameObject, GameCoordinate> dict) {
+        var str = "objectMap[" + dict.Count + "] { ";
+        foreach (var kvp in dict)
+            str += kvp.Key.GetInstanceID() + ": " + kvp.Value + ", ";
+        str += "}";
+        return str;
     }
 
 }
