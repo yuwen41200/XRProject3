@@ -69,6 +69,7 @@ public class GameManagement : MonoBehaviour {
 
         playerHealth = maxPlayerHealth;
         bossHealth = maxBossHealth;
+        InvokeRepeating(nameof(RecoverHealth), 0.5f, 0.5f);
         UpdateUI();
 
     }
@@ -134,7 +135,7 @@ public class GameManagement : MonoBehaviour {
                 case PlayerAction.AttackDown:
                 case PlayerAction.AttackLeft:
                 case PlayerAction.AttackRight:
-                    if (hurtableAction == playerAction) {
+                    if (objectMap[player].M() == 0 && hurtableAction == playerAction) {
                         Debug.Log("敵人被攻擊！");
                         bossHealth -= 1;
                     }
@@ -207,6 +208,15 @@ public class GameManagement : MonoBehaviour {
             if (candidates.Count == 0) break;
         }
 
+    }
+
+    private void RecoverHealth() {
+        playerHealth += 0.1f;
+        if (playerHealth > maxPlayerHealth)
+            playerHealth = maxPlayerHealth;
+        bossHealth += 0.1f;
+        if (bossHealth > maxBossHealth)
+            bossHealth = maxBossHealth;
     }
 
     private void UpdateUI() {
