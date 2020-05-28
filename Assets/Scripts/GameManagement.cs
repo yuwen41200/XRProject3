@@ -166,6 +166,14 @@ public class GameManagement : MonoBehaviour {
         player.transform.LookAt(Vector3.zero);
     }
 
+    /**
+     * 執行敵人的動作（每個拍點執行一次，先執行玩家動作，再執行敵人動作）
+     * 敵人的動作包含 移動現有攻擊、對玩家造成傷害、發動新攻擊 三個部分
+     * 1.移動現有攻擊：所有攻擊物件都移動到下一圈的同一格
+     * 2.對玩家造成傷害：若玩家所在位置有攻擊物件，會減低玩家的生命值
+     * 3.發動新攻擊：玩家在最外圈時生成 0 個攻擊物件，玩家每前進一步，生成的攻擊物件的數量加 1；
+     *   　　　　　　隨機決定這些攻擊物件要落在第 -3 圈的哪幾格（玩家的活動範圍只到第 0 圈，攻擊物件可在第 0 圈之內）
+     */
     private void BossAttack() {
 
         var objectMapKeys = new List<GameObject>(objectMap.Keys);
