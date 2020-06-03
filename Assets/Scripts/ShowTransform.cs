@@ -26,7 +26,6 @@ public class ShowTransform : MonoBehaviour
     Vector3 curRotation;
     bool isFirstDetect;
     public int direction;
-    GameObject[] swordPathArr;
 
     int[] valid;
 
@@ -44,8 +43,7 @@ public class ShowTransform : MonoBehaviour
         objTransform = GameObject.Find("Controller (left)").GetComponent<Transform>();
         CameraRigObj = GameObject.Find("[CameraRig]");
         pose = GameObject.Find("Controller (left)").GetComponent<SteamVR_Behaviour_Pose>();
-        swordPathArr = GameObject.FindGameObjectsWithTag("SwordPath");
-        theTar = swordPathArr[0];
+        theTar = FindRight(); 
         CameraRigTransform = CameraRigObj.GetComponent<Transform>();
         isFirstDetect = true;
         initState();
@@ -153,7 +151,7 @@ public class ShowTransform : MonoBehaviour
         else if (direction == -1)
         {
             // 傳 ans 給 SwordPath 他會自己判斷
-            if(theTar != null)theTar.GetComponent<SwordPath>().AnswerMatch(valid);
+            if(theTar != null)theTar.GetComponent<SwordPath>().AnswerMatch(valid,MaxValue,Maxindex);
         }
         Destroy(gameObject, 0.5f);
     }
@@ -199,6 +197,21 @@ public class ShowTransform : MonoBehaviour
                 if (i > 15 && i < 35) valid[3]++;
             }
         }
+    }
+    GameObject FindRight()
+    {
+        if (direction == 1) return null;
+        for (int i = 0; i < 5; i++) {
+            GameObject obj = GameObject.FindGameObjectsWithTag("SwordPath")[i];
+            if (obj == null) break;
+            if (obj.GetComponent<SwordPath>().isBind == false)
+            {
+                obj.GetComponent<SwordPath>().isBind = true;
+                return obj;
+            }
+        }
+        return null;
+
     }
 
     private void Update() {

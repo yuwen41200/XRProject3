@@ -53,15 +53,16 @@ public class GameManagement : MonoBehaviour {
     // 生命相關
     public HealthControl hpController;
 
+
     private void Awake()
     {
 
     }
 
     private void Start() {
-        
-        detectedActions = new Queue<PlayerAction>();
 
+
+        detectedActions = new Queue<PlayerAction>();
         // set beat spawn delay
         beatSpawnEarly = beatPool.GetSpawnEarly();
 
@@ -135,7 +136,6 @@ public class GameManagement : MonoBehaviour {
             float time =  atkBeats.Dequeue();
             // -1 is from left to right，攻擊我預設是右到左
             beatPool.ReuseByDirection(-1);
-            Debug.Log("??;");
             GameObject obj = Instantiate(SwordPahtObj, Vector3.zero, Quaternion.identity);
             SwordPathGen temp = new SwordPathGen(time);
             obj.GetComponent<SwordPath>().SetAnswer(temp.GetAnswer());
@@ -202,7 +202,6 @@ public class GameManagement : MonoBehaviour {
             BossAttack();
             //Debug.Log(ObjectMapToString(objectMap));
         }
-
         UpdateUI();
         if (bossHealth <= 0.0001) GameEnd(true);
         else if (playerHealth <= 0.0001) GameEnd(false);
@@ -335,4 +334,33 @@ public class GameManagement : MonoBehaviour {
         return str;
     }
 
+
+    // called by TrackChooser.cs
+    public void SetTrack(AudioClip a)
+    {
+        gameMusic = GetComponent<AudioSource>();
+        gameMusic.clip = a;
+    }
+
+    // called by TrackChooser.cs
+    public void SetMoveCSV(string[] str)
+    {
+        beats.Clear();
+        foreach (string s in str)
+        {
+            beats.Enqueue(float.Parse(s));
+            Debug.Log(float.Parse(s));
+        }
+    }
+
+    // called by TrackChooser.cs
+    public void SetAttackCSV(string[] str)
+    {
+        atkBeats.Clear();
+        foreach (string s in str)
+        {
+            atkBeats.Enqueue(float.Parse(s));
+            Debug.Log(float.Parse(s));
+        }
+    }
 }

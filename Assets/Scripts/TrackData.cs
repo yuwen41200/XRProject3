@@ -7,6 +7,9 @@ public class TrackData : MonoBehaviour
     public AudioClip track;
     public string detail;
     public Sprite sprite;
+    public TextAsset moveCSV;
+    public TextAsset attackCSV;
+
 
     public AudioClip GetTrack()
     {
@@ -19,5 +22,15 @@ public class TrackData : MonoBehaviour
     public Sprite GetSprite()
     {
         return sprite;
+    }
+
+    public TextAsset GetMoveCSV()
+    {
+        return moveCSV;
+    }
+
+    public TextAsset GetAttackCSV()
+    {
+        return attackCSV;
     }
 }

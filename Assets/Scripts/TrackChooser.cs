@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class TrackChooser : MonoBehaviour
 {
-    public GameObject gamemanagement;
+    public GameManagement gamemanagement;
     public GameObject[] TrackBtns;
 
     private int selectIndex;
@@ -17,8 +17,12 @@ public class TrackChooser : MonoBehaviour
     private GameObject panel;
     // Start is called before the first frame update
 
+    // 讀取歌曲的move和attack的CSV
+    private ReadCSV readcsv;
+
     private void Start()
     {
+        readcsv = new ReadCSV();
         OpenPanel();
     }
 
@@ -75,8 +79,19 @@ public class TrackChooser : MonoBehaviour
 
     public void ConfirmTrack()
     {
+
+        TrackData td = TrackBtns[selectIndex].GetComponent<TrackData>();
         TrackBtns[selectIndex].GetComponent<Button>().Select();
+        string[] moveCSV = readcsv.ReadFile(td.GetMoveCSV());
+        string[] attackCSV = readcsv.ReadFile(td.GetAttackCSV());
+        Debug.Log("123123");
         // set track audioclip
+        // set track move
+        // set track attack
+        gamemanagement.SetTrack(td.GetTrack());
+        gamemanagement.SetMoveCSV(moveCSV);
+        gamemanagement.SetAttackCSV(attackCSV);
+
     }
 
     private void ClosePanel()
