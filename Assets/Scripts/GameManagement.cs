@@ -29,8 +29,8 @@ public class GameManagement : MonoBehaviour {
     private readonly Dictionary<GameObject, GameCoordinate> objectMap =
         new Dictionary<GameObject, GameCoordinate>();
 
-    // Test all possible positions, can be removed
-    public GameObject testG;
+    // Show all possible positions
+    public GameObject coordinateMark;
 
     // 張文胤
     [SerializeField] private float moveSpeed;
@@ -95,8 +95,8 @@ public class GameManagement : MonoBehaviour {
         player.transform.position = initialPosition.ToCartesianCoordinate(height);
         player.transform.LookAt(Vector3.zero);
 
-        // Test all possible positions, can be removed
-        // ShowAllPosition();
+        // Show all possible positions
+        ShowAllPosition();
 
         playerHealth = maxPlayerHealth;
         bossHealth = maxBossHealth;
@@ -105,12 +105,18 @@ public class GameManagement : MonoBehaviour {
 
     }
 
-    // Test all possible positions, can be removed
+    // Show all possible positions
     private void ShowAllPosition() {
-        for (var i = 0; i < 6; ++i) {
-            for (var j = 0; j < 24; ++j) {
-                var tmpP = new GameCoordinate(i, j);
-                Instantiate(testG, tmpP.ToCartesianCoordinate(), Quaternion.identity);
+        for (var i = 0; i < GameCoordinate.GetSizeOfM(); ++i) {
+            for (var j = 0; j < GameCoordinate.GetSizeOfN(); ++j) {
+                var position = new GameCoordinate(i, j);
+                var newCoordinateMark = Instantiate(
+                    coordinateMark,
+                    position.ToCartesianCoordinate(),
+                    coordinateMark.transform.rotation,
+                    coordinateMark.transform.parent
+                );
+                newCoordinateMark.SetActive(true);
             }
         }
     }

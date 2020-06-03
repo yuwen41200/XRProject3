@@ -22,6 +22,7 @@ public class SceneManagement : MonoBehaviour {
     [SerializeField] private GameObject enFrScene;
     [SerializeField] private GameObject jpKrScene;
     [SerializeField] private GameObject gameUI;
+    [SerializeField] private GameObject coordinateMarks;
 
     private void Awake() {
 
@@ -41,6 +42,7 @@ public class SceneManagement : MonoBehaviour {
         enFrScene.SetActive(false);
         jpKrScene.SetActive(false);
         gameUI.SetActive(false);
+        coordinateMarks.SetActive(false);
 
     }
 
@@ -65,11 +67,11 @@ public class SceneManagement : MonoBehaviour {
                 if (!isFading && trackSelectionController.enterButtonIsClicked) {
                     if (regionSelectionController.selectedRegion == GameState.EnFrRegion) {
                         gameState = GameState.EnFrRegion;
-                        StartCoroutine(Fade(trackSelectionPanel, new []{enFrScene, gameUI}));
+                        StartCoroutine(Fade(trackSelectionPanel, new []{enFrScene, gameUI, coordinateMarks}));
                     }
                     else if (regionSelectionController.selectedRegion == GameState.JpKrRegion) {
                         gameState = GameState.JpKrRegion;
-                        StartCoroutine(Fade(trackSelectionPanel, new []{jpKrScene, gameUI}));
+                        StartCoroutine(Fade(trackSelectionPanel, new []{jpKrScene, gameUI, coordinateMarks}));
                     }
                 }
                 break;
