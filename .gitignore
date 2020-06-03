@@ -59,14 +59,15 @@ sysinfo.txt
 crashlytics-build.properties
 
 # Multimedia files
-# *.png
-# *.mp3
-# *.mp4
-# *.psd
-# *.kra
-Assets/Model/*.fbx
-Assets/Model/*.png
-Assets/Music/*.mp3
+*.png
+*.jpg
+*.mp3
+*.mp4
+*.psd
+*.kra
+*.fbx
+*.mat
+*.obj
 
 # macOS system file
 .DS_Store
@@ -74,3 +75,22 @@ Assets/Music/*.mp3
 # Rider project configuration directory
 .idea/
 
+# Resources
+Assets/Classic Picture Frame/
+Assets/Fantasy Forest Environment Free Sample/
+Assets/Future City Free/
+Assets/WorldSkies/
+Assets/_TerrainAutoUpgrade/
+Assets/S2/
+Assets/Model/
+Assets/Material/
+Assets/Resources/
+Assets/Classic Picture Frame.meta
+Assets/Fantasy Forest Environment Free Sample.meta
+Assets/Future City Free.meta
+Assets/WorldSkies.meta
+Assets/_TerrainAutoUpgrade.meta
+Assets/S2.meta
+Assets/Model.meta
+Assets/Material.meta
+Assets/Resources.meta

@@ -8,9 +8,11 @@ public class GameManagement : MonoBehaviour {
     private AudioSource gameMusic;
     private readonly Queue<float> beats = new Queue<float>();
     private readonly Queue<PlayerAction> sols = new Queue<PlayerAction>();
+    // move from ShowTransform to here
+    public Queue<PlayerAction> detectedActions;
 
-    public GameObject showTransformCarrier;
-    private ShowTransform showTransform;
+    // public GameObject showTransformCarrier;
+    // private ShowTransform showTransform;
 
     public GameObject sampleLightCarrier;
     private Light sampleLight;
@@ -34,15 +36,35 @@ public class GameManagement : MonoBehaviour {
     private float playerHealth;
     [SerializeField] private float maxBossHealth;
     private float bossHealth;
-    public Text healthStatusText;
+    //public Text healthStatusText;
+
+
+    // 洪冠群
+
+    // 歌曲相關
+    // 產生音符的GameObject
+    public BeatPool beatPool;
+    private float beatSpawnEarly;
+    // 生命相關
+    public HealthControl hpController;
+
+    private void Awake()
+    {
+
+    }
 
     private void Start() {
+        
+        detectedActions = new Queue<PlayerAction>();
+
+        // set beat spawn delay
+        beatSpawnEarly = beatPool.GetSpawnEarly();
 
         gameMusic = GetComponent<AudioSource>();
         gameMusic.loop = true;
         if (!gameMusic.playOnAwake) gameMusic.Play();
 
-        showTransform = showTransformCarrier.GetComponent<ShowTransform>();
+        //showTransform = showTransformCarrier.GetComponent<ShowTransform>();
         sampleLight = sampleLightCarrier.GetComponent<Light>();
 
         // 測試用，音樂完成後應替換成真實資料（單位：秒）// Test, change 5 to 2, change 60 to 200
@@ -84,8 +106,23 @@ public class GameManagement : MonoBehaviour {
         }
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.H))
+            playerHealth -= 1;
+    }
+
     private void FixedUpdate() {
 
+        // UI show beat, by 冠群
+        if (beats.Count != 0 && gameMusic.time >= beats.Peek()-beatSpawnEarly)
+        {
+            beats.Dequeue();
+            //showTransform.turnedOn = true;
+            beatPool.ReuseByDirection(-1);
+            beatPool.ReuseByDirection(1);
+        }
+        /*
         if (beats.Count != 0 && gameMusic.time >= beats.Peek()) {
             // 下一個拍點到了
             beats.Dequeue();
@@ -95,13 +132,13 @@ public class GameManagement : MonoBehaviour {
             sampleLight.color = colorsForBeats[colorsIndex];
             colorsIndex = (colorsIndex + 1) % 3;
         }
-
-        if (showTransform.detectedActions.Count != 0) {
+        */
+        if (detectedActions.Count != 0) {
             // 處理玩家的動作
             GameCoordinate newPosition;
             var hurtableAction = (sols.Count != 0) ? sols.Dequeue() : PlayerAction.NoAction;
             // Note: sols.Count == 0 should not happen
-            var playerAction = showTransform.detectedActions.Dequeue();
+            var playerAction = detectedActions.Dequeue();
             switch (playerAction) {
                 case PlayerAction.MoveFront:
                     newPosition = new GameCoordinate(
@@ -145,7 +182,7 @@ public class GameManagement : MonoBehaviour {
             }
             // 敵人移動現有攻擊、對玩家造成傷害、發動新攻擊
             BossAttack();
-            Debug.Log(ObjectMapToString(objectMap));
+            //Debug.Log(ObjectMapToString(objectMap));
         }
 
         UpdateUI();
@@ -228,6 +265,9 @@ public class GameManagement : MonoBehaviour {
     }
 
     private void UpdateUI() {
+        hpController.SetPlayerHP(playerHealth);
+        hpController.SetBossHP(bossHealth);
+        /*
         var str = "Player Health: ";
         str += new string('▓', Mathf.RoundToInt(playerHealth / maxPlayerHealth * 10));
         str += "\nBoss Health: ";
@@ -252,14 +292,17 @@ public class GameManagement : MonoBehaviour {
             str += "\n";
         }
         healthStatusText.text = str;
+        */
     }
 
     private void GameEnd(bool playerWin) {
+        /*
         var str = healthStatusText.text;
         str += "GAME ENDED! YOU ";
         str += playerWin ? "WIN" : "LOSE";
         str += "!\n";
         healthStatusText.text = str;
+        */
         Time.timeScale = 0;
     }
 

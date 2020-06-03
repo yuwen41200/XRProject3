@@ -6,11 +6,7 @@ using Valve.VR;
 
 public class ShowTransform : MonoBehaviour
 {
-    [SerializeField]
-    GameObject obj;
     Transform objTransform;
-    [SerializeField]
-    Text text;
 
     [SerializeField]
     GameObject CameraRigObj;
@@ -29,13 +25,10 @@ public class ShowTransform : MonoBehaviour
     Vector3 curSpeed;
     Vector3 curPosition;
     Vector3 curRotation;
-
-    public bool turnedOn; // This flag will be set by GameManagement
-    public Queue<PlayerAction> detectedActions; // Used by GameManagement
+    bool isFirstDetect;
 
     [SerializeField]
-    private Text testDirection;
-
+    GameManagement gameManagement;
 
     [SerializeField]
     private SteamVR_Behaviour_Pose pose;
@@ -43,27 +36,26 @@ public class ShowTransform : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        objTransform = obj.GetComponent<Transform>();
+        gameManagement = GameObject.Find("GameManagementCarrier").GetComponent<GameManagement>();
+        objTransform = GameObject.Find("Controller (left)").GetComponent<Transform>();
         CameraRigObj = GameObject.Find("[CameraRig]");
+        pose = GameObject.Find("Controller (left)").GetComponent<SteamVR_Behaviour_Pose>();
         CameraRigTransform = CameraRigObj.GetComponent<Transform>();
+        isFirstDetect = true;
         init();
-        turnedOn = false;
-        detectedActions = new Queue<PlayerAction>();
     }
 
 
     private void FixedUpdate()
     {
-        ShowMsg();
-        if (!turnedOn) return;
-
         Cal_Update_Data();
         // test, change 100 to 50
-        if (PositionList.Count > 50)
+        if (PositionList.Count > 50 && isFirstDetect == true)
         {
+            isFirstDetect = false;
             Debug.Log("Start Judge !");
             DetectMovement();
-            turnedOn = false;
+            Destroy(gameObject, 5);
         }
 
         if (Input.GetKey(KeyCode.Space))
@@ -83,11 +75,6 @@ public class ShowTransform : MonoBehaviour
         curSpeed = (curPosition - PositionList[PositionList.Count-1]) / Time.fixedDeltaTime;
         curRotation = pose.GetAngularVelocity();
 
-        //if (Mathf.Abs(curSpeed.y) > speedTreshold && Mathf.Abs(SpeedList[PositionList.Count - 1].y) > speedTreshold )
-        //{
-        //    if(Mathf.Sign(curSpeed.y) == Mathf.Sign(SpeedList[PositionList.Count - 1].y)) Debug.Log("upup!");
-        //}
-
         PositionList.Add(curPosition);
         SpeedList.Add(curSpeed);
         RotationList.Add(curRotation);
@@ -103,20 +90,12 @@ public class ShowTransform : MonoBehaviour
             if (SpeedList[i].y > speedThreshold)
             {
                 validSpeed[0]++;
+                if(i>15 && i<35) validSpeed[0]++;
             }
             if (SpeedList[i].y < -speedThreshold)
             {
                 validSpeed[1]++;
-            }
-
-            /*  try to use other data to detect left and right*/
-            if (SpeedList[i].x < -speedThreshold)
-            {
-                validSpeed[2]++;
-            }
-            if ( SpeedList[i].x > speedThreshold)
-            {
-                validSpeed[3]++;
+                if (i > 15 && i < 35) validSpeed[1]++;
             }
         }
 
@@ -125,25 +104,18 @@ public class ShowTransform : MonoBehaviour
         //  X- => up, Y- => left
         for(int i = 1; i < RotationList.Count; i++)
         {
-            if (RotationList[i].x < -rotationThreshold)
-            {
-                validRotation[0]++;
-            }
-            if (RotationList[i].x > rotationThreshold)
-            {
-                validRotation[1]++;
-            }
             if (RotationList[i].y < -rotationThreshold)
             {
                 validRotation[2]++;
+                if (i > 15 && i < 35) validRotation[2]++;
             }
             if (RotationList[i].y > rotationThreshold)
             {
                 validRotation[3]++;
+                if (i > 15 && i < 35) validRotation[3]++;
             }
         }
 
-        // Debug.Log(validSpeed[0] + "," + validSpeed[1]+ "," +validRotation[2]+ "," +validRotation[3]);
 
         int Maxindex = 0 , MaxValue = 0;
 
@@ -165,47 +137,34 @@ public class ShowTransform : MonoBehaviour
             MaxValue = validRotation[3];
         }
 
+        Debug.Log(validSpeed[0] + "," + validSpeed[1] + "," + validRotation[2] + "," + validRotation[3] + "," +MaxValue +"," + Maxindex);
         if (MaxValue > 7)
         {
             if (Maxindex == 0) {
-                detectedActions.Enqueue(PlayerAction.MoveBack);
-                testDirection.text = "UP";
+                gameManagement.detectedActions.Enqueue(PlayerAction.MoveBack);
                 Debug.Log("we detect up!");
             }
             else if (Maxindex == 1) {
-                detectedActions.Enqueue(PlayerAction.MoveFront);
-                testDirection.text = "Down";
+                gameManagement.detectedActions.Enqueue(PlayerAction.MoveFront);
                 Debug.Log("we detect down!");
             }
             else if (Maxindex == 2) {
-                detectedActions.Enqueue(PlayerAction.MoveLeft);
-                testDirection.text = "Left";
+                gameManagement.detectedActions.Enqueue(PlayerAction.MoveLeft);
                 Debug.Log("we detect left!");
             }
             else if (Maxindex == 3) {
-                detectedActions.Enqueue(PlayerAction.MoveRight);
-                testDirection.text = "Right";
+                gameManagement.detectedActions.Enqueue(PlayerAction.MoveRight);
                 Debug.Log("we detect right!");
             }
             else {
-                testDirection.text = "None";
-                detectedActions.Enqueue(PlayerAction.NoAction);
+                gameManagement.detectedActions.Enqueue(PlayerAction.NoAction);
             }
         }
         else {
-            detectedActions.Enqueue(PlayerAction.NoAction);
+            gameManagement.detectedActions.Enqueue(PlayerAction.NoAction);
         }
-
-        PositionList.Clear();
-        SpeedList.Clear();
-        RotationList.Clear();
-        init();
-    }
-
-    void ShowMsg()
-    {
-        text.text = objTransform.position.ToString() + "\n" + curSpeed + "\n" +
-        pose.GetAngularVelocity();
+        
+        Destroy(gameObject, 0.5f);
     }
 
     void init()
@@ -220,23 +179,23 @@ public class ShowTransform : MonoBehaviour
     private void Update() {
         // 測試用，用鍵盤控制玩家動作
         if (Input.GetKeyDown(KeyCode.W))
-            detectedActions.Enqueue(PlayerAction.MoveFront);
+            gameManagement.detectedActions.Enqueue(PlayerAction.MoveFront);
         else if (Input.GetKeyDown(KeyCode.S))
-            detectedActions.Enqueue(PlayerAction.MoveBack);
+            gameManagement.detectedActions.Enqueue(PlayerAction.MoveBack);
         else if (Input.GetKeyDown(KeyCode.A))
-            detectedActions.Enqueue(PlayerAction.MoveLeft);
+            gameManagement.detectedActions.Enqueue(PlayerAction.MoveLeft);
         else if (Input.GetKeyDown(KeyCode.D))
-            detectedActions.Enqueue(PlayerAction.MoveRight);
+            gameManagement.detectedActions.Enqueue(PlayerAction.MoveRight);
         else if (Input.GetKeyDown(KeyCode.I))
-            detectedActions.Enqueue(PlayerAction.AttackUp);
+            gameManagement.detectedActions.Enqueue(PlayerAction.AttackUp);
         else if (Input.GetKeyDown(KeyCode.K))
-            detectedActions.Enqueue(PlayerAction.AttackDown);
+            gameManagement.detectedActions.Enqueue(PlayerAction.AttackDown);
         else if (Input.GetKeyDown(KeyCode.J))
-            detectedActions.Enqueue(PlayerAction.AttackLeft);
+            gameManagement.detectedActions.Enqueue(PlayerAction.AttackLeft);
         else if (Input.GetKeyDown(KeyCode.L))
-            detectedActions.Enqueue(PlayerAction.AttackRight);
+            gameManagement.detectedActions.Enqueue(PlayerAction.AttackRight);
         else if (Input.GetKeyDown(KeyCode.Space))
-            detectedActions.Enqueue(PlayerAction.NoAction);
+            gameManagement.detectedActions.Enqueue(PlayerAction.NoAction);
     }
 
 }
