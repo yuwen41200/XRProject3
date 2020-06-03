@@ -7,6 +7,11 @@ public class GameManagement : MonoBehaviour {
 
     private AudioSource gameMusic;
     private readonly Queue<float> beats = new Queue<float>();
+    // inin , this for the atkBeats and there answer sheet;
+    private readonly Queue<float> atkBeats = new Queue<float>();
+    [SerializeField]
+    GameObject SwordPahtObj;
+
     private readonly Queue<PlayerAction> sols = new Queue<PlayerAction>();
     // move from ShowTransform to here
     public Queue<PlayerAction> detectedActions;
@@ -69,7 +74,10 @@ public class GameManagement : MonoBehaviour {
 
         // 測試用，音樂完成後應替換成真實資料（單位：秒）// Test, change 5 to 2, change 60 to 200
         for (float i = 5; i <= 200; i += 2)
+        {
             beats.Enqueue(i - 0.2f);
+            atkBeats.Enqueue(i - 0.5f);
+        }
 
         // 各個拍點分別需要從哪個方向攻擊敵人
         while (sols.Count < beats.Count) {
@@ -118,9 +126,19 @@ public class GameManagement : MonoBehaviour {
         if (beats.Count != 0 && gameMusic.time >= beats.Peek()-beatSpawnEarly)
         {
             beats.Dequeue();
-            //showTransform.turnedOn = true;
-            beatPool.ReuseByDirection(-1);
+            // 1 is from right to left，移動我預設是左到右
             beatPool.ReuseByDirection(1);
+        }
+        // UI show atkBeats, by 文胤
+        if (atkBeats.Count != 0 && gameMusic.time >= atkBeats.Peek() - beatSpawnEarly)
+        {
+            float time =  atkBeats.Dequeue();
+            // -1 is from left to right，攻擊我預設是右到左
+            beatPool.ReuseByDirection(-1);
+            Debug.Log("??;");
+            GameObject obj = Instantiate(SwordPahtObj, Vector3.zero, Quaternion.identity);
+            SwordPathGen temp = new SwordPathGen(time);
+            obj.GetComponent<SwordPath>().SetAnswer(temp.GetAnswer());
         }
         /*
         if (beats.Count != 0 && gameMusic.time >= beats.Peek()) {

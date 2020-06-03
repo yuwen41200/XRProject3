@@ -90,7 +90,9 @@ MonoBehaviour:
   speed: 2
   direction: -1
   judgePoint: 0
-  DectingObj: {fileID: 8997008797474772845, guid: f27fb4fea3e456d4ebf736a5982e112c,
+  dectingMoveObj: {fileID: 8997008797474772845, guid: f27fb4fea3e456d4ebf736a5982e112c,
+    type: 3}
+  dectingAtkObj: {fileID: 3346273593417543604, guid: d0a4235e3ef8aa84c9667e3dc279db79,
     type: 3}
   detectPoint: 0
   isFirstInDetectPoint: 0

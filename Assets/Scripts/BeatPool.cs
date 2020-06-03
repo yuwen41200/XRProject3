@@ -53,8 +53,8 @@ public class BeatPool : MonoBehaviour
         spawnPos.x *= direction;
         g.GetComponent<RectTransform>().localPosition = spawnPos;
         g.GetComponent<BeatMove>().SetDirection(direction);
-        g.GetComponent<BeatMove>().isFirstInDetectPoint = true;
         g.SetActive(true);
+
     }
 
     public void Recycle(GameObject g)
@@ -82,4 +82,5 @@ public class BeatPool : MonoBehaviour
     {
         return spawnEarly;
     }
+    
 }

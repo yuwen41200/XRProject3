@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Valve.VR;
 
-public class ShowTransform : MonoBehaviour
+public class AttackMotionDetect : MonoBehaviour
 {
     Transform objTransform;
 
@@ -16,6 +16,7 @@ public class ShowTransform : MonoBehaviour
     List<Vector3> SpeedList = new List<Vector3>();
     List<Vector3> RotationList = new List<Vector3>();
 
+
     [SerializeField]
     float speedThreshold;
     [SerializeField]
@@ -25,15 +26,10 @@ public class ShowTransform : MonoBehaviour
     Vector3 curPosition;
     Vector3 curRotation;
     bool isFirstDetect;
-    public int direction;
-    GameObject[] swordPathArr;
-
-    int[] valid;
 
     [SerializeField]
     GameManagement gameManagement;
-    [SerializeField]
-    GameObject theTar;
+
     [SerializeField]
     private SteamVR_Behaviour_Pose pose;
 
@@ -41,14 +37,12 @@ public class ShowTransform : MonoBehaviour
     void Start()
     {
         gameManagement = GameObject.Find("GameManagementCarrier").GetComponent<GameManagement>();
-        objTransform = GameObject.Find("Controller (left)").GetComponent<Transform>();
+        objTransform = GameObject.Find("Controller (right)").GetComponent<Transform>();
         CameraRigObj = GameObject.Find("[CameraRig]");
-        pose = GameObject.Find("Controller (left)").GetComponent<SteamVR_Behaviour_Pose>();
-        swordPathArr = GameObject.FindGameObjectsWithTag("SwordPath");
-        theTar = swordPathArr[0];
+        pose = GameObject.Find("Controller (right)").GetComponent<SteamVR_Behaviour_Pose>();
         CameraRigTransform = CameraRigObj.GetComponent<Transform>();
         isFirstDetect = true;
-        initState();
+        init();
     }
 
 
@@ -69,7 +63,7 @@ public class ShowTransform : MonoBehaviour
             PositionList.Clear();
             SpeedList.Clear();
             RotationList.Clear();
-            initState();
+            init();
             Debug.Log("Clear");
         }
 
@@ -78,7 +72,7 @@ public class ShowTransform : MonoBehaviour
     void Cal_Update_Data()
     {
         curPosition = objTransform.position - CameraRigTransform.position;
-        curSpeed = (curPosition - PositionList[PositionList.Count-1]) / Time.fixedDeltaTime;
+        curSpeed = (curPosition - PositionList[PositionList.Count - 1]) / Time.fixedDeltaTime;
         curRotation = pose.GetAngularVelocity();
 
         PositionList.Add(curPosition);
@@ -89,119 +83,110 @@ public class ShowTransform : MonoBehaviour
     void DetectMovement()
     {
         //  [0] is up, [1] is down, [2] is left, [3] is right
-        CompareForMove();
-        CompareForRotate();
+        int[] validSpeed = new int[4];
+
+        for (int i = 1; i < SpeedList.Count; i++)
+        {
+            if (SpeedList[i].y > speedThreshold)
+            {
+                validSpeed[0]++;
+                if (i > 15 && i < 35) validSpeed[0]++;
+            }
+            if (SpeedList[i].y < -speedThreshold)
+            {
+                validSpeed[1]++;
+                if (i > 15 && i < 35) validSpeed[1]++;
+            }
+        }
+
+        //  [0] is up, [1] is down, [2] is left, [3] is right
+        int[] validRotation = new int[4];
+        //  X- => up, Y- => left
+        for (int i = 1; i < RotationList.Count; i++)
+        {
+            if (RotationList[i].y < -rotationThreshold)
+            {
+                validRotation[2]++;
+                if (i > 15 && i < 35) validRotation[2]++;
+            }
+            if (RotationList[i].y > rotationThreshold)
+            {
+                validRotation[3]++;
+                if (i > 15 && i < 35) validRotation[3]++;
+            }
+        }
+
 
         int Maxindex = 0, MaxValue = 0;
-        if (valid[0] > valid[1])
+
+        if (validSpeed[0] > validSpeed[1])
         {
             Maxindex = 0;
-            MaxValue = valid[0];
+            MaxValue = validSpeed[0];
         }
         else
         {
             Maxindex = 1;
-            MaxValue = valid[1];
+            MaxValue = validSpeed[1];
         }
-        if (valid[2] > MaxValue)
+        if (validRotation[2] > MaxValue)
         {
             Maxindex = 2;
-            MaxValue = valid[2];
+            MaxValue = validRotation[2];
         }
-        if (valid[3] > MaxValue)
+        if (validRotation[3] > MaxValue)
         {
             Maxindex = 3;
-            MaxValue = valid[3];
+            MaxValue = validRotation[3];
         }
 
-        Debug.Log(valid[0] + "," + valid[1] + "," + valid[2] + "," + valid[3]);
-
-        if (direction == 1)
+        Debug.Log(validSpeed[0] + "," + validSpeed[1] + "," + validRotation[2] + "," + validRotation[3]);
+        if (MaxValue > 7)
         {
-            if (MaxValue > 7)
+            if (Maxindex == 0)
             {
-                if (Maxindex == 0)
-                {
-                    gameManagement.detectedActions.Enqueue(PlayerAction.MoveBack);
-                    Debug.Log("we detect up!");
-                }
-                else if (Maxindex == 1)
-                {
-                    gameManagement.detectedActions.Enqueue(PlayerAction.MoveFront);
-                    Debug.Log("we detect down!");
-                }
-                else if (Maxindex == 2)
-                {
-                    gameManagement.detectedActions.Enqueue(PlayerAction.MoveLeft);
-                    Debug.Log("we detect left!");
-                }
-                else if (Maxindex == 3)
-                {
-                    gameManagement.detectedActions.Enqueue(PlayerAction.MoveRight);
-                    Debug.Log("we detect right!");
-                }
-                else
-                {
-                    gameManagement.detectedActions.Enqueue(PlayerAction.NoAction);
-                }
+                gameManagement.detectedActions.Enqueue(PlayerAction.MoveBack);
+                Debug.Log("we detect up!");
+            }
+            else if (Maxindex == 1)
+            {
+                gameManagement.detectedActions.Enqueue(PlayerAction.MoveFront);
+                Debug.Log("we detect down!");
+            }
+            else if (Maxindex == 2)
+            {
+                gameManagement.detectedActions.Enqueue(PlayerAction.MoveLeft);
+                Debug.Log("we detect left!");
+            }
+            else if (Maxindex == 3)
+            {
+                gameManagement.detectedActions.Enqueue(PlayerAction.MoveRight);
+                Debug.Log("we detect right!");
             }
             else
             {
                 gameManagement.detectedActions.Enqueue(PlayerAction.NoAction);
             }
         }
-        else if (direction == -1)
+        else
         {
-            // 傳 ans 給 SwordPath 他會自己判斷
-            if(theTar != null)theTar.GetComponent<SwordPath>().AnswerMatch(valid);
+            gameManagement.detectedActions.Enqueue(PlayerAction.NoAction);
         }
+
         Destroy(gameObject, 0.5f);
     }
 
-    void initState()
+    void init()
     {
         curPosition = objTransform.position - CameraRigTransform.position;
         curSpeed = curRotation = Vector3.zero;
         PositionList.Add(curPosition);
         SpeedList.Add(curSpeed);
         RotationList.Add(curRotation);
-        valid = new int[4];
     }
 
-    void CompareForMove()
+    private void Update()
     {
-        for (int i = 1; i < SpeedList.Count; i++)
-        {
-            if (SpeedList[i].y > speedThreshold)
-            {
-                valid[0]++;
-                if (i > 15 && i < 35) valid[0]++;
-            }
-            if (SpeedList[i].y < -speedThreshold)
-            {
-                valid[1]++;
-                if (i > 15 && i < 35) valid[1]++;
-            }
-        }
-    }
-    void CompareForRotate()
-    {   //  X- => up, Y- => left
-        for (int i = 1; i < RotationList.Count; i++)
-        {
-            if (RotationList[i].y < -rotationThreshold)
-            {
-                valid[2]++;
-                if (i > 15 && i < 35) valid[2]++;
-            }
-            if (RotationList[i].y > rotationThreshold)
-            {
-                valid[3]++;
-                if (i > 15 && i < 35) valid[3]++;
-            }
-        }
-    }
-
-    private void Update() {
         // 測試用，用鍵盤控制玩家動作
         if (Input.GetKeyDown(KeyCode.W))
             gameManagement.detectedActions.Enqueue(PlayerAction.MoveFront);
@@ -225,8 +210,3 @@ public class ShowTransform : MonoBehaviour
 
 }
 
-public enum PlayerAction {
-    MoveFront, MoveBack, MoveLeft, MoveRight,
-    AttackUp, AttackDown, AttackLeft, AttackRight,
-    NoAction
-}

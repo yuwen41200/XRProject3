@@ -5,7 +5,6 @@ using UnityEngine;
 public class BeatMove : MonoBehaviour
 {
     public bool isMove;
-
     [SerializeField]
     private float speed;
     [SerializeField]
@@ -14,11 +13,13 @@ public class BeatMove : MonoBehaviour
     // default is 0 (local position)
     public float judgePoint;
 
-    public GameObject DectingObj;
+    public GameObject dectingMoveObj;
+    public GameObject dectingAtkObj;
     public float detectPoint;
 
     private BeatPool bp;
     public bool isFirstInDetectPoint;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -30,6 +31,7 @@ public class BeatMove : MonoBehaviour
     void OnEnable()
     {
         isMove = true;
+        isFirstInDetectPoint = true;
     }
 
     // Update is called once per frame
@@ -45,7 +47,16 @@ public class BeatMove : MonoBehaviour
             if ((curPos.x - judgePoint) * direction > -detectPoint && isFirstInDetectPoint == true)
             {
                 isFirstInDetectPoint = false;
-                GameObject obj = Instantiate(DectingObj, curPos, Quaternion.identity);
+                if (direction == 1)
+                {
+                    GameObject obj = Instantiate(dectingMoveObj, curPos, Quaternion.identity);
+                    obj.GetComponent<ShowTransform>().direction = direction;
+                }
+                else if(direction == -1)
+                {
+                    GameObject obj = Instantiate(dectingAtkObj, curPos, Quaternion.identity);
+                    obj.GetComponent<ShowTransform>().direction = direction;
+                }
                 //Destroy(this.gameObject);
             }
             // 超過判斷點，消失

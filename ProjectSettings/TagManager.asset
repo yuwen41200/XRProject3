@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - SwordPath
+  - projectile
+  - FxTemporaire
+  - Boss
   layers:
   - Default
   - TransparentFX
