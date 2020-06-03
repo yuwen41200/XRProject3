@@ -51,6 +51,7 @@ public class SceneManagement : MonoBehaviour {
 
             case GameState.Entry:
                 if (!isFading && entryController.enterButtonIsClicked) {
+                    entryController.enterButtonIsClicked = false;
                     gameState = GameState.RegionSelection;
                     StartCoroutine(Fade(entryPanel, new []{regionSelectionPanel}));
                 }
@@ -58,6 +59,7 @@ public class SceneManagement : MonoBehaviour {
 
             case GameState.RegionSelection:
                 if (!isFading && regionSelectionController.enterButtonIsClicked) {
+                    regionSelectionController.enterButtonIsClicked = false;
                     gameState = GameState.TrackSelection;
                     StartCoroutine(Fade(regionSelectionPanel, new []{trackSelectionPanel}));
                 }
@@ -65,6 +67,7 @@ public class SceneManagement : MonoBehaviour {
 
             case GameState.TrackSelection:
                 if (!isFading && trackSelectionController.enterButtonIsClicked) {
+                    trackSelectionController.enterButtonIsClicked = false;
                     if (regionSelectionController.selectedRegion == GameState.EnFrRegion) {
                         gameState = GameState.EnFrRegion;
                         StartCoroutine(Fade(trackSelectionPanel, new []{enFrScene, gameUI, coordinateMarks}));
