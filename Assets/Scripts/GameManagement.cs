@@ -68,17 +68,17 @@ public class GameManagement : MonoBehaviour {
 
         gameMusic = GetComponent<AudioSource>();
         gameMusic.loop = true;
-        if (!gameMusic.playOnAwake) gameMusic.Play();
+        // if (!gameMusic.playOnAwake) gameMusic.Play();
 
         //showTransform = showTransformCarrier.GetComponent<ShowTransform>();
         sampleLight = sampleLightCarrier.GetComponent<Light>();
 
         // 測試用，音樂完成後應替換成真實資料（單位：秒）// Test, change 5 to 2, change 60 to 200
-        for (float i = 5; i <= 200; i += 2)
+        /* for (float i = 5; i <= 200; i += 2)
         {
             beats.Enqueue(i - 0.2f);
             atkBeats.Enqueue(i - 0.5f);
-        }
+        } */
 
         // 各個拍點分別需要從哪個方向攻擊敵人
         while (sols.Count < beats.Count) {

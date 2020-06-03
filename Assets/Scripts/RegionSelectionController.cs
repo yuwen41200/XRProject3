@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TrackChooser : MonoBehaviour
+public class RegionSelectionController : MonoBehaviour
 {
     public GameManagement gamemanagement;
     public GameObject[] TrackBtns;
@@ -20,10 +20,13 @@ public class TrackChooser : MonoBehaviour
     // 讀取歌曲的move和attack的CSV
     private ReadCSV readcsv;
 
+    public bool enterButtonIsClicked;
+    public GameState selectedRegion;
+
     private void Start()
     {
         readcsv = new ReadCSV();
-        OpenPanel();
+        // OpenPanel();
     }
 
     // Update is called once per frame
@@ -37,14 +40,14 @@ public class TrackChooser : MonoBehaviour
         {
             ChoosePrevious();
         }
-        if (Input.GetKeyDown(KeyCode.KeypadEnter))
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             ConfirmTrack();
-            ClosePanel();
+            // ClosePanel();
         }
         if (Input.GetKeyDown(KeyCode.Keypad0))
         {
-            OpenPanel();
+            // OpenPanel();
         }
     }
     private void Init()
@@ -52,6 +55,7 @@ public class TrackChooser : MonoBehaviour
         selectIndex = 0;
         TrackBtns[selectIndex].GetComponent<Button>().Select();
         ShowTrack();
+        enterButtonIsClicked = false;
     }
 
     public void ChooseNext()
@@ -73,14 +77,14 @@ public class TrackChooser : MonoBehaviour
 
     private void ShowTrack()
     {
-        detail.text = TrackBtns[selectIndex].GetComponent<TrackData>().GetDetail();
-        Img.sprite = TrackBtns[selectIndex].GetComponent<TrackData>().GetSprite();
+        // detail.text = TrackBtns[selectIndex].GetComponent<TrackData>().GetDetail();
+        // Img.sprite = TrackBtns[selectIndex].GetComponent<TrackData>().GetSprite();
     }
 
     public void ConfirmTrack()
     {
 
-        TrackData td = TrackBtns[selectIndex].GetComponent<TrackData>();
+        /* TrackData td = TrackBtns[selectIndex].GetComponent<TrackData>();
         TrackBtns[selectIndex].GetComponent<Button>().Select();
         string[] moveCSV = readcsv.ReadFile(td.GetMoveCSV());
         string[] attackCSV = readcsv.ReadFile(td.GetAttackCSV());
@@ -90,7 +94,9 @@ public class TrackChooser : MonoBehaviour
         // set track attack
         gamemanagement.SetTrack(td.GetTrack());
         gamemanagement.SetMoveCSV(moveCSV);
-        gamemanagement.SetAttackCSV(attackCSV);
+        gamemanagement.SetAttackCSV(attackCSV); */
+        selectedRegion = GameState.EnFrRegion;
+        enterButtonIsClicked = true;
 
     }
 

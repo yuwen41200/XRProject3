@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public enum GameState {
-    Entry, RegionSelection, TrackSelection, GamePlaying, GameEnded
+    Entry, RegionSelection, TrackSelection, EnFrRegion, JpKrRegion, GameEnded
 }
 
 public class SceneManagement : MonoBehaviour {
@@ -13,14 +13,15 @@ public class SceneManagement : MonoBehaviour {
     private bool isFading;
 
     [SerializeField] private GameObject entryPanel;
-    private EntryController entryController;
+    [SerializeField] private EntryController entryController;
     [SerializeField] private GameObject regionSelectionPanel;
-    private RegionSelectionController regionSelectionController;
+    [SerializeField] private RegionSelectionController regionSelectionController;
     [SerializeField] private GameObject trackSelectionPanel;
-    private TrackSelectionController trackSelectionController;
+    [SerializeField] private TrackSelectionController trackSelectionController;
 
     [SerializeField] private GameObject enFrScene;
     [SerializeField] private GameObject jpKrScene;
+    [SerializeField] private GameObject gameUI;
 
     private void Awake() {
 
@@ -30,15 +31,16 @@ public class SceneManagement : MonoBehaviour {
         blackScreen.color = resetColor;
         isFading = false;
 
-        entryController = entryPanel.GetComponent<EntryController>();
-        regionSelectionController = regionSelectionPanel.GetComponent<RegionSelectionController>();
-        trackSelectionController = trackSelectionPanel.GetComponent<TrackSelectionController>();
+        // entryController = entryPanel.GetComponent<EntryController>();
+        // regionSelectionController = regionSelectionPanel.GetComponent<RegionSelectionController>();
+        // trackSelectionController = trackSelectionPanel.GetComponent<TrackSelectionController>();
 
         entryPanel.SetActive(true);
         regionSelectionPanel.SetActive(false);
         trackSelectionPanel.SetActive(false);
         enFrScene.SetActive(false);
         jpKrScene.SetActive(false);
+        gameUI.SetActive(false);
 
     }
 
@@ -46,27 +48,36 @@ public class SceneManagement : MonoBehaviour {
         switch (gameState) {
 
             case GameState.Entry:
-                if (!isFading && entryController.EnterButtonIsClicked) {
+                if (!isFading && entryController.enterButtonIsClicked) {
                     gameState = GameState.RegionSelection;
-                    StartCoroutine(Fade(entryPanel, regionSelectionPanel));
+                    StartCoroutine(Fade(entryPanel, new []{regionSelectionPanel}));
                 }
                 break;
 
             case GameState.RegionSelection:
-                if (!isFading && regionSelectionController.EnterButtonIsClicked) {
+                if (!isFading && regionSelectionController.enterButtonIsClicked) {
                     gameState = GameState.TrackSelection;
-                    StartCoroutine(Fade(regionSelectionPanel, trackSelectionPanel));
+                    StartCoroutine(Fade(regionSelectionPanel, new []{trackSelectionPanel}));
                 }
                 break;
 
             case GameState.TrackSelection:
-                if (!isFading && trackSelectionController.EnterButtonIsClicked) {
-                    gameState = GameState.GamePlaying;
-                    StartCoroutine(Fade(trackSelectionPanel, enFrScene));
+                if (!isFading && trackSelectionController.enterButtonIsClicked) {
+                    if (regionSelectionController.selectedRegion == GameState.EnFrRegion) {
+                        gameState = GameState.EnFrRegion;
+                        StartCoroutine(Fade(trackSelectionPanel, new []{enFrScene, gameUI}));
+                    }
+                    else if (regionSelectionController.selectedRegion == GameState.JpKrRegion) {
+                        gameState = GameState.JpKrRegion;
+                        StartCoroutine(Fade(trackSelectionPanel, new []{jpKrScene, gameUI}));
+                    }
                 }
                 break;
 
-            case GameState.GamePlaying:
+            case GameState.EnFrRegion:
+                break;
+
+            case GameState.JpKrRegion:
                 break;
 
             case GameState.GameEnded:
@@ -79,7 +90,7 @@ public class SceneManagement : MonoBehaviour {
         }
     }
 
-    private IEnumerator Fade(GameObject previousScene, GameObject nextScene) {
+    private IEnumerator Fade(GameObject previousScene, GameObject[] nextScenes) {
 
         isFading = true;
 
@@ -93,7 +104,8 @@ public class SceneManagement : MonoBehaviour {
 
         // 切換場景
         previousScene.SetActive(false);
-        nextScene.SetActive(true);
+        foreach (var nextScene in nextScenes)
+            nextScene.SetActive(true);
 
         // 畫面淡入
         for (var alpha = 1f; alpha >= -0.01f; alpha -= 0.025f) {
