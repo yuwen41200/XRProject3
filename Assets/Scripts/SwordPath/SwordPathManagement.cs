@@ -23,6 +23,7 @@ public class SwordPathManagement : MonoBehaviour
 
     private GameObject boss;
     int countFish = 0;
+    public bool goToEndScene;
 
     public AudioSource attackAS;
 
@@ -34,13 +35,14 @@ public class SwordPathManagement : MonoBehaviour
         towardT = GameObject.Find("Camera").GetComponent<Transform>();
         // 依照答案轉圖片方向
         //Vector3 roEular = new Vector3(Mathf.PI / 6 * answerDir, 0, 0);
+        goToEndScene = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (countFish == 8) StartCoroutine( WeClear());
-        if(Input.GetKeyDown(KeyCode.F)) StartCoroutine(WeClear());
+        if (countFish == 8) StartCoroutine(WeClear());
+        if (Input.GetKeyDown(KeyCode.F)) StartCoroutine(WeClear());
     }
 
     public void AnswerMatch(int[] voteResult, int MaxValue, int Maxindex) {
@@ -129,13 +131,15 @@ public class SwordPathManagement : MonoBehaviour
             index++;
         }
     }
+
     IEnumerator WeClear() {
         countFish++;
         Debug.Log("Clear");
         StartCoroutine(jump()); 
         for (int i = 0; i < 40; i++)
-        yield return null;
+            yield return null;
     }
+
     IEnumerator jump()
     {
         for (int i = 0; i < 40; i++) {
@@ -150,6 +154,7 @@ public class SwordPathManagement : MonoBehaviour
             fistHead.transform.Translate(vel/2 * Time.fixedDeltaTime, Space.World);
             yield return null;
         }
+        goToEndScene = true;
         yield return null;
     }
 }

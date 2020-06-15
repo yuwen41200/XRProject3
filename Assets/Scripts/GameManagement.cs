@@ -354,6 +354,11 @@ public class GameManagement : MonoBehaviour {
         gameMusic.Play();
     }
 
+    private void StopTrack()
+    {
+        gameMusic.Stop();
+    }
+
     // called by TrackChooser.cs
     public void SetMoveCSV(string[] str)
     {
@@ -387,6 +392,12 @@ public class GameManagement : MonoBehaviour {
     {
         isStartPlay = true;
         PlayTrack();
+    }
+
+    public void StopPlay()
+    {
+        isStartPlay = false;
+        StopTrack();
     }
 
 }

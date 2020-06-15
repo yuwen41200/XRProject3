@@ -30,6 +30,10 @@ public class SceneManagement : MonoBehaviour {
     [SerializeField] private GameObject coordinateMarks;
 
     [SerializeField] private GameManagement gameManagement;
+    [SerializeField] private SwordPathManagement swordPathManagement;
+
+    [SerializeField] private GameObject gameEndedPanel;
+    [SerializeField] private GameObject videoPlayer;
 
     // by Kuan, record the region chosen, used to choose track panel
     private int regionIndex;
@@ -64,6 +68,9 @@ public class SceneManagement : MonoBehaviour {
         gameUI.SetActive(false);
         coordinateMarks.SetActive(false);
 
+        gameEndedPanel.SetActive(false);
+        videoPlayer.SetActive(false);
+
     }
 
     private void LateUpdate() {
@@ -73,7 +80,10 @@ public class SceneManagement : MonoBehaviour {
                 if (!isFading && entryController.enterButtonIsClicked) {
                     entryController.enterButtonIsClicked = false;
                     gameState = GameState.RegionSelection;
-                    StartCoroutine(Fade(entryPanel, new []{regionSelectionPanel}));
+                    StartCoroutine(Fade(
+                        new []{entryPanel},
+                        new []{regionSelectionPanel}
+                    ));
                 }
                 break;
 
@@ -83,7 +93,10 @@ public class SceneManagement : MonoBehaviour {
                     gameState = GameState.TrackSelection;
                     regionIndex = regionSelectionController.GetTrackPanelIndex();
                     // trackSelectionController.panel = trackSelectionPanel[regionIndex]; // set panel
-                    StartCoroutine(Fade(regionSelectionPanel, new []{trackSelectionPanel[regionIndex]}));
+                    StartCoroutine(Fade(
+                        new []{regionSelectionPanel},
+                        new []{trackSelectionPanel[regionIndex]}
+                    ));
                 }
                 break;
 
@@ -92,20 +105,42 @@ public class SceneManagement : MonoBehaviour {
                     trackSelectionController.enterButtonIsClicked = false;
                     if (regionSelectionController.selectedRegion == GameState.EnFrRegion) {
                         gameState = GameState.EnFrRegion;
-                        StartCoroutine(Fade(trackSelectionPanel[regionIndex], new []{enFrScene, gameUI, coordinateMarks}));
+                        StartCoroutine(Fade(
+                            new []{trackSelectionPanel[regionIndex]},
+                            new []{enFrScene, gameUI, coordinateMarks}
+                        ));
                     }
                     else if (regionSelectionController.selectedRegion == GameState.JpKrRegion) {
                         gameState = GameState.JpKrRegion;
-                        StartCoroutine(Fade(trackSelectionPanel[regionIndex], new []{jpKrScene, gameUI, coordinateMarks}));
+                        StartCoroutine(Fade(
+                            new []{trackSelectionPanel[regionIndex]},
+                            new []{jpKrScene, gameUI, coordinateMarks}
+                        ));
                     }
                     // StartCoroutine(RegionStartPlay()); // Merged into Fade()
                 }
                 break;
 
             case GameState.EnFrRegion:
+                if (!isFading && swordPathManagement.goToEndScene) {
+                    swordPathManagement.goToEndScene = false;
+                    gameState = GameState.GameEnded;
+                    StartCoroutine(Fade(
+                        new []{enFrScene, gameUI, coordinateMarks},
+                        new []{gameEndedPanel, videoPlayer}
+                    ));
+                }
                 break;
 
             case GameState.JpKrRegion:
+                if (!isFading && swordPathManagement.goToEndScene) {
+                    swordPathManagement.goToEndScene = false;
+                    gameState = GameState.GameEnded;
+                    StartCoroutine(Fade(
+                        new []{jpKrScene, gameUI, coordinateMarks},
+                        new []{gameEndedPanel, videoPlayer}
+                    ));
+                }
                 break;
 
             case GameState.GameEnded:
@@ -118,7 +153,7 @@ public class SceneManagement : MonoBehaviour {
         }
     }
 
-    private IEnumerator Fade(GameObject previousScene, GameObject[] nextScenes) {
+    private IEnumerator Fade(GameObject[] previousScenes, GameObject[] nextScenes) {
 
         isFading = true;
 
@@ -131,10 +166,15 @@ public class SceneManagement : MonoBehaviour {
         }
 
         // 切換場景
-        previousScene.SetActive(false);
+        foreach (var previousScene in previousScenes)
+            previousScene.SetActive(false);
         foreach (var nextScene in nextScenes)
             nextScene.SetActive(true);
-        if (enFrScene.activeInHierarchy || jpKrScene.activeInHierarchy) {
+        if (previousScenes[0] == enFrScene || previousScenes[0] == jpKrScene) {
+            vrCamera.clearFlags = CameraClearFlags.SolidColor;
+            gameManagement.StopPlay();
+        }
+        if (nextScenes[0] == enFrScene || nextScenes[0] == jpKrScene) {
             vrCamera.clearFlags = CameraClearFlags.Skybox;
             gameManagement.StartPlay();
         }
@@ -151,8 +191,8 @@ public class SceneManagement : MonoBehaviour {
 
     }
 
-    public void ChangeState(GameState gs) {
-        this.gameState = gs;
+    public void SetGameState(GameState newGameState) {
+        gameState = newGameState;
     }
 
     // Merged into Fade()
