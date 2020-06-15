@@ -14,7 +14,6 @@ public class BeatPool : MonoBehaviour
 
     private float beatSpeed;
 
-    [HideInInspector]
     public float spawnEarly;
 
     [SerializeField]
@@ -25,7 +24,7 @@ public class BeatPool : MonoBehaviour
     private RectTransform leftBeatSpawnPos;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         SetBeatSpeed();
         ComputeSpawnEarly();

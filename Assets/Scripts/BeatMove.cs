@@ -24,7 +24,7 @@ public class BeatMove : MonoBehaviour
     void Start()
     {
         // 25 is the half of interation in ShowTransform's DetectMovement
-        detectPoint = speed * Time.fixedDeltaTime * 25;
+        detectPoint = speed * Time.fixedDeltaTime * 15;
         isFirstInDetectPoint = true;
     }
 

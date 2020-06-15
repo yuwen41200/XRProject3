@@ -48,6 +48,7 @@ public class EntryController : MonoBehaviour
         {
             // OpenPanel();
         }
+        TrackBtns[selectIndex].GetComponent<Button>().Select();
     }
     private void Init()
     {
@@ -94,6 +95,8 @@ public class EntryController : MonoBehaviour
         gamemanagement.SetTrack(td.GetTrack());
         gamemanagement.SetMoveCSV(moveCSV);
         gamemanagement.SetAttackCSV(attackCSV); */
+
+        this.GetComponent<AudioSource>().Play();
         enterButtonIsClicked = true;
 
     }

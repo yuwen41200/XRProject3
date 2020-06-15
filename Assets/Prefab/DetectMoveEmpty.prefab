@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8997008797474772843}
   - component: {fileID: 8997008797474772844}
   m_Layer: 0
-  m_Name: DetectEmpty
+  m_Name: DetectMoveEmpty
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -43,8 +43,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3df85b3c055cf34989fcfcfb130bee0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CameraRigObj: {fileID: 0}
-  speedThreshold: 0.9
-  rotationThreshold: 4
+  deltaVel: {x: 0, y: 0, z: 0}
+  speedThreshold: 1
+  rotationThreshold: 4.5
+  direction: 0
   gameManagement: {fileID: 0}
+  theTar: {fileID: 0}
   pose: {fileID: 0}

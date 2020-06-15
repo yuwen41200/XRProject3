@@ -2,12 +2,17 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum GameRegion{
+    England, France, Japan, Korea
+}
+
 public enum GameState {
     Entry, RegionSelection, TrackSelection, EnFrRegion, JpKrRegion, GameEnded
 }
 
 public class SceneManagement : MonoBehaviour {
 
+    [SerializeField]
     private GameState gameState;
     [SerializeField] private Image blackScreen;
     private bool isFading;
@@ -16,13 +21,18 @@ public class SceneManagement : MonoBehaviour {
     [SerializeField] private EntryController entryController;
     [SerializeField] private GameObject regionSelectionPanel;
     [SerializeField] private RegionSelectionController regionSelectionController;
-    [SerializeField] private GameObject trackSelectionPanel;
+    [SerializeField] private GameObject[] trackSelectionPanel;
     [SerializeField] private TrackSelectionController trackSelectionController;
 
     [SerializeField] private GameObject enFrScene;
     [SerializeField] private GameObject jpKrScene;
     [SerializeField] private GameObject gameUI;
     [SerializeField] private GameObject coordinateMarks;
+
+    [SerializeField] private GameManagement gameManagement;
+
+    // by Kuan, record the region choosed, used to choose track panel
+    private int regionIndex;
 
     private void Awake() {
 
@@ -38,7 +48,12 @@ public class SceneManagement : MonoBehaviour {
 
         entryPanel.SetActive(true);
         regionSelectionPanel.SetActive(false);
-        trackSelectionPanel.SetActive(false);
+
+        //trackSelectionPanel.SetActive(false);
+        // by Kuan
+        foreach (GameObject g in trackSelectionPanel)
+            g.SetActive(false);
+
         enFrScene.SetActive(false);
         jpKrScene.SetActive(false);
         gameUI.SetActive(false);
@@ -61,7 +76,9 @@ public class SceneManagement : MonoBehaviour {
                 if (!isFading && regionSelectionController.enterButtonIsClicked) {
                     regionSelectionController.enterButtonIsClicked = false;
                     gameState = GameState.TrackSelection;
-                    StartCoroutine(Fade(regionSelectionPanel, new []{trackSelectionPanel}));
+                    regionIndex = regionSelectionController.GetTrackPanelIndex();
+                    // trackSelectionController.panel = trackSelectionPanel[regionIndex]; // set panel
+                    StartCoroutine(Fade(regionSelectionPanel, new []{trackSelectionPanel[regionIndex] }));
                 }
                 break;
 
@@ -70,12 +87,13 @@ public class SceneManagement : MonoBehaviour {
                     trackSelectionController.enterButtonIsClicked = false;
                     if (regionSelectionController.selectedRegion == GameState.EnFrRegion) {
                         gameState = GameState.EnFrRegion;
-                        StartCoroutine(Fade(trackSelectionPanel, new []{enFrScene, gameUI, coordinateMarks}));
+                        StartCoroutine(Fade(trackSelectionPanel[regionIndex], new []{enFrScene, gameUI, coordinateMarks}));
                     }
                     else if (regionSelectionController.selectedRegion == GameState.JpKrRegion) {
                         gameState = GameState.JpKrRegion;
-                        StartCoroutine(Fade(trackSelectionPanel, new []{jpKrScene, gameUI, coordinateMarks}));
+                        StartCoroutine(Fade(trackSelectionPanel[regionIndex], new []{jpKrScene, gameUI, coordinateMarks}));
                     }
+                    StartCoroutine(RegionStartPlay());
                 }
                 break;
 
@@ -124,4 +142,14 @@ public class SceneManagement : MonoBehaviour {
 
     }
 
+    public void ChangeState(GameState gs)
+    {
+        this.gameState = gs;
+    }
+
+    IEnumerator RegionStartPlay()
+    {
+        yield return new WaitForSeconds(2);
+        gameManagement.StartPlay();
+    }
 }

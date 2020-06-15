@@ -53,6 +53,11 @@ public class GameManagement : MonoBehaviour {
     // 生命相關
     public HealthControl hpController;
 
+    //stage 
+    public bool isStartPlay;
+
+    public AudioSource moveAS;
+
 
     private void Awake()
     {
@@ -128,7 +133,8 @@ public class GameManagement : MonoBehaviour {
     }
 
     private void FixedUpdate() {
-
+        if (!isStartPlay)
+            return;
         // UI show beat, by 冠群
         if (beats.Count != 0 && gameMusic.time >= beats.Peek()-beatSpawnEarly)
         {
@@ -142,9 +148,10 @@ public class GameManagement : MonoBehaviour {
             float time =  atkBeats.Dequeue();
             // -1 is from left to right，攻擊我預設是右到左
             beatPool.ReuseByDirection(-1);
-            GameObject obj = Instantiate(SwordPahtObj, Vector3.zero, Quaternion.identity);
-            SwordPathGen temp = new SwordPathGen(time);
-            obj.GetComponent<SwordPath>().SetAnswer(temp.GetAnswer());
+            // 不用在這邊生成刀刻了，在開始的時候已經生成好了
+            //GameObject obj = Instantiate(SwordPahtObj, Vector3.zero, Quaternion.identity);
+            //SwordPathGen temp = new SwordPathGen(time);
+            //obj.GetComponent<SwordPathManagement>().SetAnswer(temp.GetAnswer());
         }
         /*
         if (beats.Count != 0 && gameMusic.time >= beats.Peek()) {
@@ -215,6 +222,7 @@ public class GameManagement : MonoBehaviour {
     }
 
     private IEnumerator MoveSmoothly(Vector3 destination) {
+        moveAS.Play();
         while (Vector3.Distance(player.transform.position, destination) > moveSpeed) {
             var direction = Vector3.Normalize(destination - player.transform.position);
             player.transform.Translate(direction * moveSpeed, Space.World);
@@ -348,15 +356,21 @@ public class GameManagement : MonoBehaviour {
         gameMusic.clip = a;
     }
 
+    private void PlayTrack()
+    {
+        gameMusic.Play();
+    }
+
     // called by TrackChooser.cs
     public void SetMoveCSV(string[] str)
     {
         beats.Clear();
         foreach (string s in str)
         {
-            beats.Enqueue(float.Parse(s));
-            Debug.Log(float.Parse(s));
+            beats.Enqueue(float.Parse(s)-0.15f);
+            //Debug.Log(float.Parse(s));
         }
+        Debug.Log(("MoveCSV read finished"));
     }
 
     // called by TrackChooser.cs
@@ -365,8 +379,19 @@ public class GameManagement : MonoBehaviour {
         atkBeats.Clear();
         foreach (string s in str)
         {
-            atkBeats.Enqueue(float.Parse(s));
-            Debug.Log(float.Parse(s));
+            atkBeats.Enqueue(float.Parse(s)-0.2f);
+            //Debug.Log(float.Parse(s));
         }
+        Debug.Log(("AttackCSV read finished"));
     }
+    public int ReturnPlayerN()
+    {
+        return objectMap[player].N();
+    }
+    public void StartPlay()
+    {
+        isStartPlay = true;
+        PlayTrack();
+    }
+
 }

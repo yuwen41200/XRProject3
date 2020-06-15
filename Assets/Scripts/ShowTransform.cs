@@ -9,6 +9,7 @@ public class ShowTransform : MonoBehaviour
     Transform objTransform;
 
     [SerializeField]
+    Vector3 deltaVel;
     GameObject CameraRigObj;
     Transform CameraRigTransform;
 
@@ -40,10 +41,10 @@ public class ShowTransform : MonoBehaviour
     void Start()
     {
         gameManagement = GameObject.Find("GameManagementCarrier").GetComponent<GameManagement>();
-        objTransform = GameObject.Find("Controller (left)").GetComponent<Transform>();
+        objTransform = FindHandTransform(direction);
         CameraRigObj = GameObject.Find("[CameraRig]");
-        pose = GameObject.Find("Controller (left)").GetComponent<SteamVR_Behaviour_Pose>();
-        theTar = FindRight(); 
+        pose = FindHandPose(direction);
+        theTar = FindRightSwordPath(); 
         CameraRigTransform = CameraRigObj.GetComponent<Transform>();
         isFirstDetect = true;
         initState();
@@ -54,12 +55,11 @@ public class ShowTransform : MonoBehaviour
     {
         Cal_Update_Data();
         // test, change 100 to 50
-        if (PositionList.Count > 50 && isFirstDetect == true)
+        if (PositionList.Count > 30 && isFirstDetect == true)
         {
             isFirstDetect = false;
-            Debug.Log("Start Judge !");
             DetectMovement();
-            Destroy(gameObject, 5);
+            Destroy(gameObject, 1f);
         }
 
         if (Input.GetKey(KeyCode.Space))
@@ -82,6 +82,7 @@ public class ShowTransform : MonoBehaviour
         PositionList.Add(curPosition);
         SpeedList.Add(curSpeed);
         RotationList.Add(curRotation);
+
     }
 
     void DetectMovement()
@@ -112,7 +113,7 @@ public class ShowTransform : MonoBehaviour
             MaxValue = valid[3];
         }
 
-        Debug.Log(valid[0] + "," + valid[1] + "," + valid[2] + "," + valid[3]);
+        //Debug.Log(valid[0] + "," + valid[1] + "," + valid[2] + "," + valid[3]);
 
         if (direction == 1)
         {
@@ -120,13 +121,19 @@ public class ShowTransform : MonoBehaviour
             {
                 if (Maxindex == 0)
                 {
-                    gameManagement.detectedActions.Enqueue(PlayerAction.MoveBack);
-                    Debug.Log("we detect up!");
+                    if (valid[0] - valid[3] > MaxValue / 4 && valid[0] - valid[2] > MaxValue / 4)
+                    {
+                        gameManagement.detectedActions.Enqueue(PlayerAction.MoveBack);
+                        Debug.Log("we detect up!");
+                    }
                 }
                 else if (Maxindex == 1)
                 {
-                    gameManagement.detectedActions.Enqueue(PlayerAction.MoveFront);
-                    Debug.Log("we detect down!");
+                    if (valid[1] - valid[3] > MaxValue / 4 && valid[1] - valid[2] > MaxValue / 4)
+                    {
+                        gameManagement.detectedActions.Enqueue(PlayerAction.MoveFront);
+                        Debug.Log("we detect down!");
+                    }
                 }
                 else if (Maxindex == 2)
                 {
@@ -151,7 +158,7 @@ public class ShowTransform : MonoBehaviour
         else if (direction == -1)
         {
             // 傳 ans 給 SwordPath 他會自己判斷
-            if(theTar != null)theTar.GetComponent<SwordPath>().AnswerMatch(valid,MaxValue,Maxindex);
+            if (theTar != null)theTar.GetComponent<SwordPathManagement>().AnswerMatch(valid,MaxValue,Maxindex);
         }
         Destroy(gameObject, 0.5f);
     }
@@ -173,12 +180,24 @@ public class ShowTransform : MonoBehaviour
             if (SpeedList[i].y > speedThreshold)
             {
                 valid[0]++;
-                if (i > 15 && i < 35) valid[0]++;
+                if (i > 10 && i < 20) 
+                {
+                    valid[0] = valid[0] + 1;
+                    if (SpeedList[i].y > 2.5 * speedThreshold) valid[0] = valid[0] + 4 ;
+                } 
+                if (SpeedList[i].y > 2 * speedThreshold) valid[0]++;
+                if (SpeedList[i].y > 3 * speedThreshold) valid[0]++;
             }
             if (SpeedList[i].y < -speedThreshold)
             {
                 valid[1]++;
-                if (i > 15 && i < 35) valid[1]++;
+                if (i > 10 && i < 20)
+                {
+                    valid[1] = valid[1] + 1;
+                    if (SpeedList[i].y > 2.5 * -speedThreshold) valid[1] = valid[1] + 4;
+                }
+                if (SpeedList[i].y > 2 * -speedThreshold) valid[1]++;
+                if (SpeedList[i].y > 3 * -speedThreshold) valid[1]++;
             }
         }
     }
@@ -189,29 +208,35 @@ public class ShowTransform : MonoBehaviour
             if (RotationList[i].y < -rotationThreshold)
             {
                 valid[2]++;
-                if (i > 15 && i < 35) valid[2]++;
+                if (i > 10 && i < 20) valid[2] = valid[2] + 2;
+                if (RotationList[i].y < 2 * -rotationThreshold) valid[2]++;
             }
             if (RotationList[i].y > rotationThreshold)
             {
                 valid[3]++;
-                if (i > 15 && i < 35) valid[3]++;
+                if (i > 10 && i < 20) valid[3] = valid[3] + 2;
+                if (RotationList[i].y < 2 * rotationThreshold) valid[3]++;
             }
         }
     }
-    GameObject FindRight()
+    GameObject FindRightSwordPath()
     {
         if (direction == 1) return null;
-        for (int i = 0; i < 5; i++) {
-            GameObject obj = GameObject.FindGameObjectsWithTag("SwordPath")[i];
-            if (obj == null) break;
-            if (obj.GetComponent<SwordPath>().isBind == false)
-            {
-                obj.GetComponent<SwordPath>().isBind = true;
-                return obj;
-            }
-        }
-        return null;
-
+        GameObject obj = GameObject.FindGameObjectWithTag("Boss");
+        // 會找到在BOSS 底下掛有 SwordPathManagement的那個物件
+        return obj;
+    }
+    Transform FindHandTransform(int dir) 
+    {
+        if (dir == 1) return GameObject.Find("Controller (left)").GetComponent<Transform>();
+        else if (dir == -1) return GameObject.Find("Controller (right)").GetComponent<Transform>();
+        else return null;
+    }
+    SteamVR_Behaviour_Pose FindHandPose(int dir)
+    {
+        if (dir == 1) return GameObject.Find("Controller (left)").GetComponent<SteamVR_Behaviour_Pose>();
+        else if (dir == -1) return GameObject.Find("Controller (right)").GetComponent<SteamVR_Behaviour_Pose>();
+        else return null;
     }
 
     private void Update() {
