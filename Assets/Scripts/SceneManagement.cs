@@ -172,6 +172,7 @@ public class SceneManagement : MonoBehaviour {
             nextScene.SetActive(true);
         if (previousScenes[0] == enFrScene || previousScenes[0] == jpKrScene) {
             vrCamera.clearFlags = CameraClearFlags.SolidColor;
+            vrCamera.backgroundColor = Color.black;
             gameManagement.StopPlay();
         }
         if (nextScenes[0] == enFrScene || nextScenes[0] == jpKrScene) {
