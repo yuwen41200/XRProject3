@@ -10,7 +10,7 @@ public class GameManagement : MonoBehaviour {
     // inin , this for the atkBeats and there answer sheet;
     private readonly Queue<float> atkBeats = new Queue<float>();
     [SerializeField]
-    GameObject SwordPahtObj;
+    GameObject SwordPathObj;
 
     private readonly Queue<PlayerAction> sols = new Queue<PlayerAction>();
     // move from ShowTransform to here
@@ -41,8 +41,7 @@ public class GameManagement : MonoBehaviour {
     private float playerHealth;
     [SerializeField] private float maxBossHealth;
     private float bossHealth;
-    //public Text healthStatusText;
-
+    // public Text healthStatusText;
 
     // 洪冠群
 
@@ -53,19 +52,14 @@ public class GameManagement : MonoBehaviour {
     // 生命相關
     public HealthControl hpController;
 
-    //stage 
+    // stage 
     public bool isStartPlay;
 
     public AudioSource moveAS;
 
-
-    private void Awake()
-    {
-
-    }
+    private void Awake() { }
 
     private void Start() {
-
 
         detectedActions = new Queue<PlayerAction>();
         // set beat spawn delay
@@ -149,7 +143,7 @@ public class GameManagement : MonoBehaviour {
             // -1 is from left to right，攻擊我預設是右到左
             beatPool.ReuseByDirection(-1);
             // 不用在這邊生成刀刻了，在開始的時候已經生成好了
-            //GameObject obj = Instantiate(SwordPahtObj, Vector3.zero, Quaternion.identity);
+            //GameObject obj = Instantiate(SwordPathObj, Vector3.zero, Quaternion.identity);
             //SwordPathGen temp = new SwordPathGen(time);
             //obj.GetComponent<SwordPathManagement>().SetAnswer(temp.GetAnswer());
         }
@@ -212,8 +206,8 @@ public class GameManagement : MonoBehaviour {
                     break;
             }
             // 敵人移動現有攻擊、對玩家造成傷害、發動新攻擊
-            BossAttack();
-            //Debug.Log(ObjectMapToString(objectMap));
+            // BossAttack();
+            // Debug.Log(ObjectMapToString(objectMap));
         }
         UpdateUI();
         if (bossHealth <= 0.0001) GameEnd(true);
@@ -348,7 +342,6 @@ public class GameManagement : MonoBehaviour {
         return str;
     }
 
-
     // called by TrackChooser.cs
     public void SetTrack(AudioClip a)
     {
@@ -384,10 +377,12 @@ public class GameManagement : MonoBehaviour {
         }
         Debug.Log(("AttackCSV read finished"));
     }
+
     public int ReturnPlayerN()
     {
         return objectMap[player].N();
     }
+
     public void StartPlay()
     {
         isStartPlay = true;

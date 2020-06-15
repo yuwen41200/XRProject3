@@ -12,8 +12,8 @@ public enum GameState {
 
 public class SceneManagement : MonoBehaviour {
 
-    [SerializeField]
-    private GameState gameState;
+    [SerializeField] private GameState gameState;
+    [SerializeField] private Camera vrCamera;
     [SerializeField] private Image blackScreen;
     private bool isFading;
 
@@ -31,7 +31,7 @@ public class SceneManagement : MonoBehaviour {
 
     [SerializeField] private GameManagement gameManagement;
 
-    // by Kuan, record the region choosed, used to choose track panel
+    // by Kuan, record the region chosen, used to choose track panel
     private int regionIndex;
 
     private void Awake() {
@@ -42,6 +42,11 @@ public class SceneManagement : MonoBehaviour {
         blackScreen.color = resetColor;
         isFading = false;
 
+        vrCamera.clearFlags = CameraClearFlags.SolidColor;
+        vrCamera.backgroundColor = new Color(236, 236, 236, 0);
+        blackScreen.gameObject.SetActive(true);
+        blackScreen.transform.parent.gameObject.SetActive(true);
+
         // entryController = entryPanel.GetComponent<EntryController>();
         // regionSelectionController = regionSelectionPanel.GetComponent<RegionSelectionController>();
         // trackSelectionController = trackSelectionPanel.GetComponent<TrackSelectionController>();
@@ -49,7 +54,7 @@ public class SceneManagement : MonoBehaviour {
         entryPanel.SetActive(true);
         regionSelectionPanel.SetActive(false);
 
-        //trackSelectionPanel.SetActive(false);
+        // trackSelectionPanel.SetActive(false);
         // by Kuan
         foreach (GameObject g in trackSelectionPanel)
             g.SetActive(false);
@@ -78,7 +83,7 @@ public class SceneManagement : MonoBehaviour {
                     gameState = GameState.TrackSelection;
                     regionIndex = regionSelectionController.GetTrackPanelIndex();
                     // trackSelectionController.panel = trackSelectionPanel[regionIndex]; // set panel
-                    StartCoroutine(Fade(regionSelectionPanel, new []{trackSelectionPanel[regionIndex] }));
+                    StartCoroutine(Fade(regionSelectionPanel, new []{trackSelectionPanel[regionIndex]}));
                 }
                 break;
 
@@ -93,7 +98,7 @@ public class SceneManagement : MonoBehaviour {
                         gameState = GameState.JpKrRegion;
                         StartCoroutine(Fade(trackSelectionPanel[regionIndex], new []{jpKrScene, gameUI, coordinateMarks}));
                     }
-                    StartCoroutine(RegionStartPlay());
+                    // StartCoroutine(RegionStartPlay()); // Merged into Fade()
                 }
                 break;
 
@@ -129,6 +134,10 @@ public class SceneManagement : MonoBehaviour {
         previousScene.SetActive(false);
         foreach (var nextScene in nextScenes)
             nextScene.SetActive(true);
+        if (enFrScene.activeInHierarchy || jpKrScene.activeInHierarchy) {
+            vrCamera.clearFlags = CameraClearFlags.Skybox;
+            gameManagement.StartPlay();
+        }
 
         // 畫面淡入
         for (var alpha = 1f; alpha >= -0.01f; alpha -= 0.025f) {
@@ -142,14 +151,15 @@ public class SceneManagement : MonoBehaviour {
 
     }
 
-    public void ChangeState(GameState gs)
-    {
+    public void ChangeState(GameState gs) {
         this.gameState = gs;
     }
 
-    IEnumerator RegionStartPlay()
-    {
+    // Merged into Fade()
+    /* private IEnumerator RegionStartPlay() {
         yield return new WaitForSeconds(2);
+        vrCamera.clearFlags = CameraClearFlags.Skybox;
         gameManagement.StartPlay();
-    }
+    } */
+
 }
